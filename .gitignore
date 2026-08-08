@@ -1,0 +1,18 @@
+# 市販テキスト（著作物）— 絶対にコミットしない
+*.pdf
+
+# 公式サイトから取得した過去問PDFと抽出テキスト（再取得可能・大容量）
+과거문/
+과거문_text/
+
+# 中間生成物
+kakomon_payload.json
+kakomon_questions.json
+kakomon_topic_freq.json
+kakomon_text_index.json
+kakomon_files.json
+kakomon_manifest.json
+ab_topics_raw.txt
+ab_topics_kanri_raw.txt
+sample_pages.txt
+__pycache__/
