@@ -1,0 +1,593 @@
+<title>短答式 過去問 肢別ドリル</title>
+<style>
+:root{
+  --ground:#FAFBFC; --card:#FFFFFF; --paper:#F1F4F7;
+  --ink:#14181D; --ink2:#4B545E; --ink3:#7B858F;
+  --rule:#D9DEE5; --rule2:#EBEFF3;
+  --ai:#1B3B6F; --ai-soft:#E6EDF7;
+  --shu:#B5423A; --shu-soft:#F7E8E6;
+  --midori:#1A6B5C; --midori-soft:#E3F0EC;
+  --sans:"Hiragino Sans","Yu Gothic UI","Yu Gothic","Noto Sans JP","Malgun Gothic",system-ui,sans-serif;
+  --mincho:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","Songti SC",serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#12161B; --card:#1A2027; --paper:#161B21;
+    --ink:#E7EBEF; --ink2:#A6B0BA; --ink3:#78828C;
+    --rule:#2B333C; --rule2:#222932;
+    --ai:#8DB2E0; --ai-soft:#1D2A3B;
+    --shu:#E0776D; --shu-soft:#33211F;
+    --midori:#57B29D; --midori-soft:#152A26;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161B; --card:#1A2027; --paper:#161B21;
+  --ink:#E7EBEF; --ink2:#A6B0BA; --ink3:#78828C;
+  --rule:#2B333C; --rule2:#222932;
+  --ai:#8DB2E0; --ai-soft:#1D2A3B;
+  --shu:#E0776D; --shu-soft:#33211F;
+  --midori:#57B29D; --midori-soft:#152A26;
+}
+:root[data-theme="light"]{
+  --ground:#FAFBFC; --card:#FFFFFF; --paper:#F1F4F7;
+  --ink:#14181D; --ink2:#4B545E; --ink3:#7B858F;
+  --rule:#D9DEE5; --rule2:#EBEFF3;
+  --ai:#1B3B6F; --ai-soft:#E6EDF7;
+  --shu:#B5423A; --shu-soft:#F7E8E6;
+  --midori:#1A6B5C; --midori-soft:#E3F0EC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  -webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px 132px;display:flex;flex-direction:column;gap:14px}
+
+/* ── 見出し ─────────────────────────── */
+header{padding:18px 2px 0;display:flex;flex-direction:column;gap:12px}
+.title{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.title h1{margin:0;font-size:1.02rem;font-weight:700;letter-spacing:.02em}
+.title .sub{font-size:.72rem;color:var(--ink3);letter-spacing:.07em;
+  font-variant-numeric:tabular-nums}
+
+/* セグメント切替 */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);
+  border-radius:9px;overflow:hidden;background:var(--card)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink2);
+  font-family:inherit;font-size:.82rem;font-weight:600;padding:10px 4px;cursor:pointer;
+  border-right:1px solid var(--rule)}
+.seg button:last-child{border-right:0}
+.seg button[aria-selected="true"]{background:var(--ai);color:#fff}
+
+/* ── マークシート風の進捗目盛り ───────── */
+.ticks{display:flex;gap:2px;height:9px;align-items:stretch;overflow:hidden}
+.ticks i{flex:1;min-width:2px;border-radius:1px;background:var(--rule2)}
+.ticks i.ok{background:var(--midori)}
+.ticks i.ng{background:var(--shu)}
+.ticks i.now{background:var(--ai)}
+
+/* ── 統計 ─────────────────────────── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.stat{background:var(--card);padding:9px 6px;text-align:center}
+.stat b{display:block;font-size:1.12rem;font-weight:700;font-variant-numeric:tabular-nums;
+  letter-spacing:-.01em}
+.stat span{display:block;font-size:.63rem;color:var(--ink3);letter-spacing:.06em;margin-top:2px}
+
+/* ── カード ───────────────────────── */
+.card{background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px}
+.stamp{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  font-size:.68rem;letter-spacing:.09em;color:var(--ink3);font-variant-numeric:tabular-nums}
+.stamp .sess{color:var(--ai);font-weight:700}
+.stamp .mk{display:inline-grid;place-items:center;width:19px;height:19px;
+  border:1.5px solid var(--ink3);border-radius:50%;font-size:.68rem;color:var(--ink2);
+  letter-spacing:0}
+.theme{font-size:.83rem;color:var(--ink2);line-height:1.6;
+  padding-bottom:11px;border-bottom:1px solid var(--rule2)}
+.statement{font-family:var(--mincho);font-size:clamp(1.04rem,4.3vw,1.2rem);
+  line-height:1.92;letter-spacing:.01em;text-align:justify;word-break:normal;
+  line-break:strict;overflow-wrap:anywhere}
+
+/* 判定の結果表示 */
+.verdict{display:flex;align-items:center;gap:11px;padding:12px 13px;border-radius:9px;
+  border:1px solid;font-size:.84rem;line-height:1.5}
+.verdict.hit{background:var(--midori-soft);border-color:var(--midori);color:var(--midori)}
+.verdict.miss{background:var(--shu-soft);border-color:var(--shu);color:var(--shu)}
+.verdict .glyph{font-size:1.5rem;line-height:1}
+.verdict b{font-weight:700}
+.verdict .note{color:var(--ink2);font-weight:400}
+
+details.full{border-top:1px solid var(--rule2);padding-top:11px}
+details.full summary{cursor:pointer;font-size:.78rem;color:var(--ai);font-weight:600;
+  list-style:none;letter-spacing:.03em}
+details.full summary::-webkit-details-marker{display:none}
+details.full summary::before{content:"▸ ";}
+details.full[open] summary::before{content:"▾ ";}
+.qstem{font-family:var(--mincho);font-size:.92rem;line-height:1.85;margin:11px 0 4px;
+  text-align:justify;overflow-wrap:anywhere}
+.shilist{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.shirow{display:flex;gap:9px;font-family:var(--mincho);font-size:.9rem;line-height:1.8;
+  padding:8px 10px;border-radius:7px;background:var(--paper);overflow-wrap:anywhere}
+.shirow .m{flex:0 0 auto;font-family:var(--sans);font-weight:700;font-size:.78rem;
+  padding-top:3px}
+.shirow.t .m{color:var(--midori)}
+.shirow.f .m{color:var(--shu)}
+.ansline{margin-top:11px;font-size:.78rem;color:var(--ink2);letter-spacing:.03em;
+  font-variant-numeric:tabular-nums}
+.ansline b{color:var(--ai);font-size:.95rem}
+
+/* ── 判定ボタン（親指の届く位置に固定） ── */
+.judge{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(
+   to top,var(--ground) 62%,transparent);padding:14px 14px 18px;z-index:9}
+.judge .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.jb{appearance:none;font-family:inherit;border:2px solid var(--rule);background:var(--card);
+  color:var(--ink);border-radius:999px;padding:15px 0;font-size:1.42rem;line-height:1;
+  cursor:pointer;transition:transform .07s ease,background .12s ease,border-color .12s ease;
+  display:flex;align-items:center;justify-content:center;gap:9px}
+.jb small{font-family:var(--sans);font-size:.66rem;letter-spacing:.1em;color:var(--ink3);
+  font-weight:700}
+.jb.o{border-color:var(--midori);color:var(--midori)}
+.jb.x{border-color:var(--shu);color:var(--shu)}
+.jb:active{transform:scale(.97)}
+.jb.o:active,.jb.o.on{background:var(--midori);color:#fff}
+.jb.x:active,.jb.x.on{background:var(--shu);color:#fff}
+.jb.o.on small,.jb.x.on small{color:rgba(255,255,255,.85)}
+.jb.next{grid-column:1/-1;border-color:var(--ai);color:var(--ai);font-size:.95rem;
+  font-family:var(--sans);font-weight:700;letter-spacing:.06em;padding:17px 0}
+.jb.next:active{background:var(--ai);color:#fff}
+
+/* ── フィルタ ─────────────────────── */
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:11px;padding:13px 14px;
+  display:flex;flex-direction:column;gap:12px}
+.frow{display:flex;flex-direction:column;gap:7px}
+.flabel{font-size:.66rem;letter-spacing:.11em;color:var(--ink3);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;font-family:inherit;font-size:.76rem;padding:7px 11px;border-radius:7px;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink2);cursor:pointer;
+  font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ai);border-color:var(--ai);color:#fff;font-weight:600}
+.chip.sm{font-size:.7rem;padding:5px 8px}
+.hint{font-size:.71rem;color:var(--ink3);line-height:1.65}
+
+/* ── 一覧（問題／頻度） ─────────────── */
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--rule);border-radius:9px;padding:11px 13px}
+.item .head{display:flex;gap:9px;align-items:baseline;font-size:.7rem;color:var(--ink3);
+  letter-spacing:.07em;font-variant-numeric:tabular-nums}
+.item .head b{color:var(--ai);font-weight:700}
+.item .body{font-family:var(--mincho);font-size:.9rem;line-height:1.75;margin-top:6px;
+  overflow-wrap:anywhere}
+.freqrow{display:flex;align-items:flex-start;gap:11px;background:var(--card);
+  border:1px solid var(--rule);border-radius:9px;padding:10px 12px}
+.freqn{flex:0 0 auto;min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+.freqn b{display:block;font-size:1.1rem;font-weight:700;color:var(--ai)}
+.freqn span{font-size:.58rem;color:var(--ink3);letter-spacing:.06em}
+.freqmain{flex:1;min-width:0}
+.freqmain .h{font-size:.88rem;line-height:1.5;overflow-wrap:anywhere}
+.freqmain .c{font-size:.68rem;color:var(--ink3);margin-top:4px;line-height:1.5;
+  overflow-wrap:anywhere}
+.grade{display:inline-block;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:4px;
+  margin-right:6px;letter-spacing:.05em}
+.grade.A{background:var(--shu-soft);color:var(--shu)}
+.grade.B{background:var(--ai-soft);color:var(--ai)}
+.empty{text-align:center;color:var(--ink3);font-size:.84rem;padding:34px 12px;line-height:1.8}
+.note{font-size:.7rem;color:var(--ink3);line-height:1.7;padding:2px 2px 0}
+select{font-family:inherit;font-size:.8rem;padding:8px 10px;border-radius:7px;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink);width:100%}
+button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--ai);
+  outline-offset:2px}
+.linkbtn{appearance:none;background:none;border:0;color:var(--ai);font-family:inherit;
+  font-size:.72rem;cursor:pointer;padding:4px 0;text-decoration:underline;letter-spacing:.03em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>短答式 過去問 肢別ドリル</h1>
+      <span class="sub" id="scope"></span>
+    </div>
+    <div class="seg" role="tablist">
+      <button role="tab" id="t-drill" aria-selected="true">演習</button>
+      <button role="tab" id="t-browse" aria-selected="false">問題</button>
+      <button role="tab" id="t-freq" aria-selected="false">頻度</button>
+    </div>
+  </header>
+
+  <!-- ══ 演習 ══ -->
+  <section id="v-drill">
+    <div class="ticks" id="ticks"></div>
+    <div class="stats" style="margin-top:12px">
+      <div class="stat"><b id="s-left">0</b><span>のこり</span></div>
+      <div class="stat"><b id="s-done">0</b><span>今日</span></div>
+      <div class="stat"><b id="s-rate">–</b><span>正答率</span></div>
+      <div class="stat"><b id="s-wrong">0</b><span>要復習</span></div>
+    </div>
+
+    <div class="card" id="card" style="margin-top:12px">
+      <div class="stamp" id="stamp"></div>
+      <div class="theme" id="theme"></div>
+      <div class="statement" id="statement"></div>
+      <div id="reveal" hidden></div>
+    </div>
+
+    <details class="panel" id="filters" style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:.78rem;font-weight:700;color:var(--ai);
+        letter-spacing:.05em">絞り込みと進捗</summary>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+        <div class="frow">
+          <div class="flabel">科目</div>
+          <div class="chips" id="f-subj"></div>
+        </div>
+        <div class="frow">
+          <div class="flabel">出題回</div>
+          <div class="chips" id="f-range"></div>
+        </div>
+        <div class="frow">
+          <div class="flabel">出題順</div>
+          <div class="chips" id="f-mode"></div>
+        </div>
+        <div class="frow">
+          <div class="flabel">進捗</div>
+          <button class="linkbtn" id="reset">この端末の解答履歴をすべて消す</button>
+          <div class="hint" id="storenote"></div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ══ 問題 ══ -->
+  <section id="v-browse" hidden>
+    <div class="panel">
+      <div class="frow">
+        <div class="flabel">出題回</div>
+        <select id="b-sess"></select>
+      </div>
+      <div class="frow">
+        <div class="flabel">科目</div>
+        <div class="chips" id="b-subj"></div>
+      </div>
+    </div>
+    <div class="list" id="b-list" style="margin-top:12px"></div>
+  </section>
+
+  <!-- ══ 頻度 ══ -->
+  <section id="v-freq" hidden>
+    <div class="panel">
+      <div class="frow">
+        <div class="flabel">科目</div>
+        <div class="chips" id="q-subj"></div>
+      </div>
+      <div class="frow">
+        <div class="flabel">重要度</div>
+        <div class="chips" id="q-grade"></div>
+      </div>
+    </div>
+    <p class="note" id="q-note"></p>
+    <div class="list" id="q-list" style="margin-top:6px"></div>
+  </section>
+</div>
+
+<div class="judge" id="judge">
+  <div class="in" id="judge-in"></div>
+</div>
+
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){
+"use strict";
+var D = JSON.parse(document.getElementById("payload").textContent);
+var SUBJ = D.subjects, SESS = D.sessions, CARDS = D.cards, QS = D.questions, TOPICS = D.topics;
+// カードの並び：会 → 科目 → 問 → 肢
+var C_S=0, C_E=1, C_N=2, C_M=3, C_V=4, C_TH=5, C_TX=6, C_Q=7;
+
+var KEY = "cpa-kakomon-v1";
+var st = load();
+function load(){
+  try{ var o = JSON.parse(localStorage.getItem(KEY)||"{}");
+       return {log:o.log||{}, day:o.day||"", done:o.done||0, hit:o.hit||0,
+               f:o.f||{subj:[0,1,2,3], range:0, mode:0}}; }
+  catch(e){ return {log:{}, day:"", done:0, hit:0, f:{subj:[0,1,2,3],range:0,mode:0}}; }
+}
+var saveT=null;
+function save(){ clearTimeout(saveT); saveT=setTimeout(function(){
+  try{ localStorage.setItem(KEY, JSON.stringify(st)); }
+  catch(e){ document.getElementById("storenote").textContent =
+    "保存できません（プライベートモードの可能性があります）。"; } },250); }
+
+function today(){ var d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+if(st.day!==today()){ st.day=today(); st.done=0; st.hit=0; }
+
+function ck(c){ return c[C_E]+"."+c[C_S]+"."+c[C_N]+"."+c[C_M]; }
+
+/* ── 出題キュー ───────────────────── */
+var RANGES = [["すべて",0],["直近10回",10],["直近5回",5],["直近3回",3]];
+var MODES  = [["新しい順",0],["古い順",1],["要復習のみ",2],["未解答のみ",3]];
+var queue=[], qi=0, answered=false;
+
+function build(){
+  var minE = 0;
+  var r = RANGES[st.f.range][1];
+  if(r) minE = Math.max(0, SESS.length - r);
+  var sel = st.f.subj;
+  var mode = st.f.mode;
+  var out = [];
+  for(var i=0;i<CARDS.length;i++){
+    var c = CARDS[i];
+    if(c[C_E] < minE) continue;
+    if(sel.indexOf(c[C_S])<0) continue;
+    var rec = st.log[ck(c)];
+    if(mode===2 && !(rec && rec.w)) continue;
+    if(mode===3 && rec) continue;
+    out.push(i);
+  }
+  out.sort(function(a,b){
+    var A=CARDS[a], B=CARDS[b];
+    var d = (mode===1) ? (A[C_E]-B[C_E]) : (B[C_E]-A[C_E]);
+    if(d) return d;
+    if(A[C_S]!==B[C_S]) return A[C_S]-B[C_S];
+    if(A[C_N]!==B[C_N]) return A[C_N]-B[C_N];
+    return A[C_M]<B[C_M]?-1:1;
+  });
+  queue = out; qi = 0; answered=false;
+  render();
+}
+
+/* ── 描画 ─────────────────────────── */
+var $ = function(id){ return document.getElementById(id); };
+
+function render(){
+  var wrong=0, seen=0, hit=0;
+  for(var k in st.log){ seen++; if(st.log[k].w) wrong++; else hit++; }
+  $("s-left").textContent = Math.max(0, queue.length - qi);
+  $("s-done").textContent = st.done;
+  $("s-rate").textContent = st.done ? Math.round(st.hit/st.done*100)+"%" : "–";
+  $("s-wrong").textContent = wrong;
+  $("scope").textContent = D.meta.ncards.toLocaleString()+"肢 / "+
+    D.meta.nq.toLocaleString()+"問 / "+SESS[0]+"〜"+SESS[SESS.length-1];
+
+  // 目盛り（現在地の前後）
+  var t = $("ticks"); t.innerHTML="";
+  var W = 44, from = Math.max(0, Math.min(qi-8, queue.length-W));
+  for(var i=from;i<Math.min(from+W, queue.length);i++){
+    var e = document.createElement("i");
+    var rec = st.log[ck(CARDS[queue[i]])];
+    if(i===qi) e.className="now"; else if(rec) e.className = rec.w?"ng":"ok";
+    t.appendChild(e);
+  }
+
+  if(qi >= queue.length){
+    $("stamp").textContent=""; $("theme").textContent="";
+    $("statement").innerHTML = '<div class="empty">この条件のカードは終わりました。<br>'+
+      '絞り込みを変えるか、「要復習のみ」で取りこぼしを回してください。</div>';
+    $("reveal").hidden = true;
+    judgeUI(false); return;
+  }
+  var c = CARDS[queue[qi]];
+  $("stamp").innerHTML = '<span class="sess">'+SESS[c[C_E]]+'</span>'+
+    '<span>'+SUBJ[c[C_S]]+'</span><span>問 '+c[C_N]+'</span>'+
+    '<span class="mk">'+c[C_M]+'</span>';
+  $("theme").textContent = c[C_TH];
+  $("statement").textContent = c[C_TX];
+  $("reveal").hidden = true; $("reveal").innerHTML="";
+  answered=false;
+  judgeUI(true);
+}
+
+function judgeUI(active){
+  var box = $("judge-in");
+  box.innerHTML="";
+  if(!active){
+    var b=document.createElement("button");
+    b.className="jb next"; b.textContent="条件を変える";
+    b.onclick=function(){ $("filters").open=true;
+      $("filters").scrollIntoView({behavior:"smooth",block:"center"}); };
+    box.appendChild(b); return;
+  }
+  if(!answered){
+    [["o","○","タダシイ"],["x","✕","アヤマリ"]].forEach(function(v){
+      var b=document.createElement("button");
+      b.className="jb "+v[0];
+      b.innerHTML = v[1]+'<small>'+v[2]+'</small>';
+      b.onclick=function(){ answer(v[0]==="o"); };
+      box.appendChild(b);
+    });
+  }else{
+    var n=document.createElement("button");
+    n.className="jb next"; n.textContent="次の肢へ";
+    n.onclick=function(){ qi++; render(); window.scrollTo({top:0,behavior:"smooth"}); };
+    box.appendChild(n);
+  }
+}
+
+function answer(said){
+  if(answered) return;
+  var c = CARDS[queue[qi]];
+  var truth = c[C_V]===1;
+  var ok = (said===truth);
+  st.log[ck(c)] = {w: ok?0:1, t: Date.now()};
+  st.done++; if(ok) st.hit++;
+  save(); answered=true;
+
+  var q = QS[c[C_Q]];
+  var r = $("reveal");
+  var v = document.createElement("div");
+  v.className = "verdict "+(ok?"hit":"miss");
+  v.innerHTML = '<span class="glyph">'+(truth?"○":"✕")+'</span>'+
+    '<span><b>この肢は'+(truth?"正しい":"誤り")+'</b>'+
+    '<span class="note">　'+(ok?"判定は合っています":"判定を外しました")+'</span></span>';
+  r.appendChild(v);
+
+  var det = document.createElement("details");
+  det.className="full";
+  var sum = document.createElement("summary");
+  sum.textContent = "問題全体と正解を見る";
+  det.appendChild(sum);
+  var wrapEl = document.createElement("div");
+  wrapEl.innerHTML = '<div class="qstem"></div><div class="shilist"></div>'+
+    '<div class="ansline">正解　<b>'+(q[4]==null?"—":q[4])+'</b>'+
+    (q[7] && q[7][q[4]] ? '　（'+q[7][q[4]]+'）' : '')+'</div>';
+  wrapEl.querySelector(".qstem").textContent = q[5];
+  var sl = wrapEl.querySelector(".shilist");
+  q[6].forEach(function(pair){
+    var row=document.createElement("div");
+    var tv = truthOf(c[C_Q], pair[0]);   // 肢の正誤はカード側が持つ
+    row.className = "shirow"+(tv===null?"":(tv?" t":" f"));
+    row.innerHTML = '<span class="m">'+pair[0]+(tv===null?"":(tv?" ○":" ✕"))+'</span>';
+    var sp=document.createElement("span"); sp.textContent = pair[1];
+    row.appendChild(sp); sl.appendChild(row);
+  });
+  det.appendChild(wrapEl);
+  r.appendChild(det);
+  r.hidden=false;
+  judgeUI(true);
+  render_stats_only();
+}
+function render_stats_only(){
+  var wrong=0; for(var k in st.log) if(st.log[k].w) wrong++;
+  $("s-done").textContent = st.done;
+  $("s-rate").textContent = st.done ? Math.round(st.hit/st.done*100)+"%" : "–";
+  $("s-wrong").textContent = wrong;
+}
+
+// 問題インデックス→肢マーク→正誤
+var TRUTH = null;
+function truthOf(qidx, mark){
+  if(!TRUTH){
+    TRUTH = {};
+    for(var i=0;i<CARDS.length;i++){
+      var c=CARDS[i];
+      (TRUTH[c[C_Q]] = TRUTH[c[C_Q]] || {})[c[C_M]] = c[C_V]===1;
+    }
+  }
+  var m = TRUTH[qidx];
+  return (m && mark in m) ? m[mark] : null;
+}
+
+/* ── フィルタUI ───────────────────── */
+function chips(host, items, isOn, onTap, cls){
+  host.innerHTML="";
+  items.forEach(function(it, i){
+    var b=document.createElement("button");
+    b.className="chip"+(cls?" "+cls:"");
+    b.textContent = it;
+    b.setAttribute("aria-pressed", isOn(i)?"true":"false");
+    b.onclick=function(){ onTap(i); };
+    host.appendChild(b);
+  });
+}
+function drawFilters(){
+  chips($("f-subj"), SUBJ, function(i){ return st.f.subj.indexOf(i)>=0; }, function(i){
+    var p = st.f.subj.indexOf(i);
+    if(p>=0){ if(st.f.subj.length===1) return; st.f.subj.splice(p,1); }
+    else st.f.subj.push(i);
+    save(); drawFilters(); build();
+  });
+  chips($("f-range"), RANGES.map(function(r){return r[0];}),
+    function(i){ return st.f.range===i; }, function(i){ st.f.range=i; save(); drawFilters(); build(); });
+  chips($("f-mode"), MODES.map(function(m){return m[0];}),
+    function(i){ return st.f.mode===i; }, function(i){ st.f.mode=i; save(); drawFilters(); build(); });
+}
+$("reset").onclick=function(){
+  if(!confirm("この端末に保存された解答履歴を消します。よろしいですか。")) return;
+  st.log={}; st.done=0; st.hit=0; save(); build();
+};
+
+/* ── 問題ビュー ───────────────────── */
+var bSess = SESS.length-1, bSubj = 0;
+function drawBrowse(){
+  var sel = $("b-sess");
+  if(!sel.options.length){
+    SESS.slice().reverse().forEach(function(s){
+      var o=document.createElement("option"); o.value=SESS.indexOf(s); o.textContent=s;
+      sel.appendChild(o);
+    });
+    sel.value = bSess;
+    sel.onchange=function(){ bSess=+sel.value; drawBrowse(); };
+  }
+  chips($("b-subj"), SUBJ, function(i){ return bSubj===i; },
+    function(i){ bSubj=i; drawBrowse(); });
+  var host=$("b-list"); host.innerHTML="";
+  var found=0;
+  QS.forEach(function(q, i){
+    if(q[1]!==bSess || q[0]!==bSubj) return;
+    found++;
+    var d=document.createElement("details"); d.className="item";
+    var s=document.createElement("summary");
+    s.style.cssText="cursor:pointer;list-style:none";
+    s.innerHTML='<span class="head"><b>問 '+q[2]+'</b><span>'+q[3]+'</span>'+
+      '<span>正解 '+(q[4]==null?"—":q[4])+'</span></span>';
+    var body=document.createElement("div");
+    body.innerHTML='<div class="qstem"></div><div class="shilist"></div>';
+    body.querySelector(".qstem").textContent=q[5];
+    var sl=body.querySelector(".shilist");
+    q[6].forEach(function(p){
+      var tv=truthOf(i,p[0]);
+      var row=document.createElement("div");
+      row.className="shirow"+(tv===null?"":(tv?" t":" f"));
+      row.innerHTML='<span class="m">'+p[0]+(tv===null?"":(tv?" ○":" ✕"))+'</span>';
+      var sp=document.createElement("span"); sp.textContent=p[1]; row.appendChild(sp);
+      sl.appendChild(row);
+    });
+    if(q[7] && Object.keys(q[7]).length){
+      var cl=document.createElement("div"); cl.className="ansline";
+      cl.textContent = "選択肢　"+Object.keys(q[7]).sort().map(function(k){
+        return k+"."+q[7][k]; }).join("　");
+      body.appendChild(cl);
+    }
+    d.appendChild(s); d.appendChild(body); host.appendChild(d);
+  });
+  if(!found) host.innerHTML='<div class="empty">この回のこの科目は収録がありません。</div>';
+}
+
+/* ── 頻度ビュー ───────────────────── */
+var KSUB=["기업법","감사론","관리회계론","재무회계론(이론)"];
+var qSubj=-1, qGrade=-1;
+function drawFreq(){
+  chips($("q-subj"), ["すべて"].concat(SUBJ), function(i){ return qSubj===i-1; },
+    function(i){ qSubj=i-1; drawFreq(); });
+  chips($("q-grade"), ["すべて","A","B"], function(i){ return qGrade===i-1; },
+    function(i){ qGrade=i-1; drawFreq(); });
+  var host=$("q-list"); host.innerHTML="";
+  var n=0;
+  var frag=document.createDocumentFragment();
+  TOPICS.forEach(function(t){
+    if(qSubj>=0 && t[0]!==KSUB[qSubj]) return;
+    if(qGrade>=0 && t[1]!==["A","B"][qGrade]) return;
+    n++;
+    if(n>400) return;
+    var row=document.createElement("div"); row.className="freqrow";
+    row.innerHTML='<div class="freqn"><b>'+t[5]+'</b><span>回</span></div>'+
+      '<div class="freqmain"><div class="h"><span class="grade '+t[1]+'">'+t[1]+'</span>'+
+      '<span class="hh"></span></div><div class="c"></div></div>';
+    row.querySelector(".hh").textContent = t[4];
+    row.querySelector(".c").textContent =
+      t[0]+"　"+t[2]+(t[3]?" / "+t[3]:"")+"　｜　"+
+      t[6].map(function(e){return SESS[e];}).join(" ");
+    frag.appendChild(row);
+  });
+  host.appendChild(frag);
+  $("q-note").textContent = "見出し語の一致で数えた概算です（"+
+    D.meta.ntopics_hit+" / "+D.meta.ntopics_total+
+    " 論点にヒット）。0回＝未出題とは限りません。表示は上位400件。";
+  if(!n) host.innerHTML='<div class="empty">該当する論点がありません。</div>';
+}
+
+/* ── タブ ─────────────────────────── */
+var VIEWS=[["t-drill","v-drill"],["t-browse","v-browse"],["t-freq","v-freq"]];
+VIEWS.forEach(function(v, i){
+  $(v[0]).onclick=function(){
+    VIEWS.forEach(function(w, j){
+      $(w[0]).setAttribute("aria-selected", i===j?"true":"false");
+      $(w[1]).hidden = (i!==j);
+    });
+    $("judge").style.display = (i===0)?"":"none";
+    if(i===1) drawBrowse();
+    if(i===2) drawFreq();
+    window.scrollTo({top:0});
+  };
+});
+
+drawFilters();
+build();
+})();
+</script>
