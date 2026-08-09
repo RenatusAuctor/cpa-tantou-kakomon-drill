@@ -61,7 +61,8 @@ for i, t in enumerate(tp):
     topics[str(i)] = [si[SUBJ_JP[t["subject"]]], 0 if t["grade"] == "A" else 1,
                       t["chapter"], t["section"], t["heading"], t["freq"],
                       ncards.get(i, 0),
-                      [ei[s] for s in t["sessions"] if s in ei]]
+                      [ei[s] for s in t["sessions"] if s in ei],
+                      t.get("vol", "").replace("권", "巻"), t.get("page", 0)]
 
 payload = {"subjects": SUBJ, "sessions": SESS, "cards": cards,
            "questions": questions, "topics": topics,

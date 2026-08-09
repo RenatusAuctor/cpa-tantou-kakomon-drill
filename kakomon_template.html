@@ -175,11 +175,15 @@ details.full[open] summary::before{content:"▾ ";}
 .topiclinks{border-top:1px solid var(--rule2);padding-top:11px;display:flex;
   flex-direction:column;gap:7px}
 .topiclinks b{font-size:.66rem;letter-spacing:.1em;color:var(--ink3);font-weight:700}
-.tchip{appearance:none;display:flex;align-items:flex-start;gap:7px;text-align:left;
+.tchip{appearance:none;display:flex;align-items:flex-start;gap:8px;text-align:left;
   border:1px solid var(--rule);background:var(--paper);color:var(--ink2);
-  font-family:inherit;font-size:.78rem;line-height:1.5;padding:8px 10px;border-radius:7px;
-  cursor:pointer;overflow-wrap:anywhere}
+  font-family:inherit;font-size:.78rem;line-height:1.5;padding:9px 11px;border-radius:7px;
+  cursor:pointer;overflow-wrap:anywhere;width:100%}
 .tchip:active{border-color:var(--ai);color:var(--ai)}
+.tchip .tb{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tchip .hd{font-weight:600;color:var(--ink)}
+.tchip .loc{font-size:.68rem;color:var(--ink3);line-height:1.45;
+  font-variant-numeric:tabular-nums}
 
 /* 論点しぼり込み中のしるし */
 #tbanner{background:var(--ai-soft);border:1px solid var(--ai);border-radius:9px;
@@ -343,6 +347,18 @@ var topicFilter=null;              // 論点IDで絞り込み中なら、その�
 
 /* 論点は肢ごとに持たせている（同じ問題でも肢によって論点が違う） */
 function cardTopics(c){ return c[C_T] || []; }
+
+/* 教材のどこか：科目・巻・頁と、章／節 */
+var T_SUBJ=0,T_G=1,T_CH=2,T_SE=3,T_HD=4,T_FQ=5,T_NC=6,T_SS=7,T_VOL=8,T_PG=9;
+function where(t){
+  var a=[SUBJ[t[T_SUBJ]]];
+  if(t[T_VOL]) a.push(t[T_VOL]);
+  if(t[T_PG]) a.push("p." + t[T_PG]);
+  var b=[];
+  if(t[T_CH]) b.push(t[T_CH]);
+  if(t[T_SE]) b.push(t[T_SE]);
+  return a.join(" ") + (b.length ? "　" + b.join(" › ") : "");
+}
 
 function build(){
   var minE = 0;
@@ -522,9 +538,10 @@ function answer(said){
       var t=TOPICS[String(id)]; if(!t) return;
       var a=document.createElement("button");
       a.type="button"; a.className="tchip";
-      a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>';
-      var sp=document.createElement("span"); sp.textContent=t[4]+"（"+t[6]+"枚）";
-      a.appendChild(sp);
+      a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>'+
+        '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
+      a.querySelector(".hd").textContent=t[4]+"（肢 "+t[6]+"枚）";
+      a.querySelector(".loc").textContent=where(t);
       a.onclick=function(){ setTopic(String(id)); };
       tw.appendChild(a);
     });
@@ -626,6 +643,23 @@ function drawBrowse(){
         return k+"."+q[7][k]; }).join("　");
       body.appendChild(cl);
     }
+    // 教材のどこを見ればよいか
+    if(q[8] && q[8].length){
+      var tw=document.createElement("div"); tw.className="topiclinks";
+      tw.innerHTML='<b>テキストの該当箇所</b>';
+      q[8].forEach(function(id){
+        var t=TOPICS[String(id)]; if(!t) return;
+        var a=document.createElement("button");
+        a.type="button"; a.className="tchip";
+        a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>'+
+          '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
+        a.querySelector(".hd").textContent=t[4]+"（肢 "+t[6]+"枚）";
+        a.querySelector(".loc").textContent=where(t);
+        a.onclick=function(){ setTopic(String(id)); showView(0); };
+        tw.appendChild(a);
+      });
+      if(tw.children.length>1) body.appendChild(tw);
+    }
     d.appendChild(s); d.appendChild(body); host.appendChild(d);
   });
   if(!found) host.innerHTML='<div class="empty">この回のこの科目は収録がありません。</div>';
@@ -671,7 +705,7 @@ function drawFreq(){
       "AB"[t[1]]+'</span><span class="hh"></span></div><div class="c"></div></div>';
     row.querySelector(".hh").textContent=t[4];
     row.querySelector(".c").textContent=
-      SUBJ[t[0]]+"　"+t[2]+(t[3]?" / "+t[3]:"")+"　｜　出題 "+t[5]+"回　"+
+      where(t)+"　｜　出題 "+t[5]+"回　"+
       t[7].map(function(e){return SESS[e];}).join(" ");
     var go=document.createElement("button");
     go.className="go"; go.type="button";

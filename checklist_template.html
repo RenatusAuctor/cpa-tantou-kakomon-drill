@@ -266,6 +266,17 @@ var SUBJ=D.subjects, CH=D.chapters, SE=D.sections, R=D.rows;
 var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7,R_ID=8,R_N=9;
 var DRILL="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/";
 
+/* 教材のどこか：巻・頁と、章／節 */
+function where(r){
+  var a=[];
+  if(r[R_V]) a.push(String(r[R_V]).replace("권","巻"));
+  if(r[R_P]) a.push("p."+r[R_P]);
+  var b=[];
+  if(CH[r[R_C]]) b.push(CH[r[R_C]]);
+  if(SE[r[R_X]]) b.push(SE[r[R_X]]);
+  return a.join(" ")+(b.length?"　"+b.join(" › "):"");
+}
+
 /* この論点の過去問肢へ飛ぶボタン（ドリル側と論点IDを共有している） */
 function drillLink(r){
   if(!r[R_N]) return null;
@@ -404,9 +415,7 @@ function rowEl(i,kind,dueDay){
     '<div class="acts'+(kind==="new"?" one":"")+'"></div>';
   var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
   el.querySelector(".h").textContent=r[R_H];
-  el.querySelector(".loc").textContent=
-    CH[r[R_C]]+(SE[r[R_X]]?" / "+SE[r[R_X]]:"")+(r[R_V]?"　"+r[R_V]:"")+
-    (r[R_P]?" p."+r[R_P]:"");
+  el.querySelector(".loc").textContent=where(r);
   var acts=el.querySelector(".acts");
   if(kind==="new"){
     acts.appendChild(btn("go","学習した（サイクル開始）",function(){
@@ -472,8 +481,7 @@ function drawAll(){
       '<div class="h"></div><div class="loc"></div><div class="acts one"></div>';
     el.querySelector(".h").textContent=r[R_H];
     el.querySelector(".loc").textContent=
-      CH[r[R_C]]+(SE[r[R_X]]?" / "+SE[r[R_X]]:"")+(r[R_V]?"　"+r[R_V]:"")+
-      (r[R_P]?" p."+r[R_P]:"");
+      where(r);
     var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
     var acts=el.querySelector(".acts");
     if(!m) acts.appendChild(btn("go","学習した（サイクル開始）",function(){
