@@ -171,6 +171,32 @@ details.full[open] summary::before{content:"▾ ";}
   margin-right:6px;letter-spacing:.05em}
 .grade.A{background:var(--shu-soft);color:var(--shu)}
 .grade.B{background:var(--ai-soft);color:var(--ai)}
+/* 肢からテキストの論点へ */
+.topiclinks{border-top:1px solid var(--rule2);padding-top:11px;display:flex;
+  flex-direction:column;gap:7px}
+.topiclinks b{font-size:.66rem;letter-spacing:.1em;color:var(--ink3);font-weight:700}
+.tchip{appearance:none;display:flex;align-items:flex-start;gap:7px;text-align:left;
+  border:1px solid var(--rule);background:var(--paper);color:var(--ink2);
+  font-family:inherit;font-size:.78rem;line-height:1.5;padding:8px 10px;border-radius:7px;
+  cursor:pointer;overflow-wrap:anywhere}
+.tchip:active{border-color:var(--ai);color:var(--ai)}
+
+/* 論点しぼり込み中のしるし */
+#tbanner{background:var(--ai-soft);border:1px solid var(--ai);border-radius:9px;
+  padding:9px 12px;display:flex;align-items:center;gap:10px;margin-bottom:11px}
+#tbanner .t{flex:1;min-width:0;font-size:.8rem;line-height:1.5;color:var(--ai);
+  overflow-wrap:anywhere}
+#tbanner .t b{display:block;font-size:.64rem;letter-spacing:.09em;opacity:.8;
+  font-weight:700}
+#tbanner button{appearance:none;flex:0 0 auto;border:1px solid var(--ai);background:transparent;
+  color:var(--ai);font-family:inherit;font-size:.72rem;padding:6px 10px;border-radius:6px;
+  cursor:pointer}
+.freqrow .go{appearance:none;margin-top:8px;width:100%;border:1.5px solid var(--ai);
+  background:transparent;color:var(--ai);font-family:inherit;font-size:.76rem;font-weight:700;
+  padding:9px 0;border-radius:7px;cursor:pointer;letter-spacing:.03em}
+.freqrow .go:active{background:var(--ai);color:#fff}
+.freqrow .go[disabled]{border-color:var(--rule);color:var(--ink3);cursor:default}
+.freqrow{flex-wrap:wrap}
 .empty{text-align:center;color:var(--ink3);font-size:.84rem;padding:34px 12px;line-height:1.8}
 .note{font-size:.7rem;color:var(--ink3);line-height:1.7;padding:2px 2px 0}
 select{font-family:inherit;font-size:.8rem;padding:8px 10px;border-radius:7px;
@@ -193,12 +219,13 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
     <div class="seg" role="tablist">
       <button role="tab" id="t-drill" aria-selected="true">演習</button>
       <button role="tab" id="t-browse" aria-selected="false">問題</button>
-      <button role="tab" id="t-freq" aria-selected="false">頻度</button>
+      <button role="tab" id="t-freq" aria-selected="false">論点</button>
     </div>
   </header>
 
   <!-- ══ 演習 ══ -->
   <section id="v-drill">
+    <div id="tbanner" hidden></div>
     <div class="ticks" id="ticks"></div>
     <div class="stats" style="margin-top:12px">
       <div class="stat"><b id="s-left">0</b><span>のこり</span></div>
@@ -265,9 +292,14 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
         <div class="flabel">重要度</div>
         <div class="chips" id="q-grade"></div>
       </div>
+      <div class="frow">
+        <div class="flabel">並び／絞り込み</div>
+        <div class="chips" id="q-sort"></div>
+      </div>
     </div>
     <p class="note" id="q-note"></p>
     <div class="list" id="q-list" style="margin-top:6px"></div>
+    <button class="chip" id="q-more" hidden style="width:100%;padding:12px">さらに表示</button>
   </section>
 </div>
 
@@ -307,6 +339,9 @@ function ck(c){ return c[C_E]+"."+c[C_S]+"."+c[C_N]+"."+c[C_M]; }
 var RANGES = [["すべて",0],["直近10回",10],["直近5回",5],["直近3回",3]];
 var MODES  = [["新しい順",0],["古い順",1],["要復習のみ",2],["未解答のみ",3]];
 var queue=[], qi=0, answered=false;
+var topicFilter=null;              // 論点IDで絞り込み中なら、その文字列
+
+function cardTopics(c){ return QS[c[C_Q]][8] || []; }
 
 function build(){
   var minE = 0;
@@ -314,11 +349,16 @@ function build(){
   if(r) minE = Math.max(0, SESS.length - r);
   var sel = st.f.subj;
   var mode = st.f.mode;
+  var tf = topicFilter==null ? -1 : parseInt(topicFilter,10);
   var out = [];
   for(var i=0;i<CARDS.length;i++){
     var c = CARDS[i];
-    if(c[C_E] < minE) continue;
-    if(sel.indexOf(c[C_S])<0) continue;
+    if(tf>=0){
+      if(cardTopics(c).indexOf(tf)<0) continue;
+    }else{
+      if(c[C_E] < minE) continue;
+      if(sel.indexOf(c[C_S])<0) continue;
+    }
     var rec = st.log[ck(c)];
     if(mode===2 && !(rec && rec.w)) continue;
     if(mode===3 && rec) continue;
@@ -333,7 +373,35 @@ function build(){
     return A[C_M]<B[C_M]?-1:1;
   });
   queue = out; qi = 0; answered=false;
+  drawBanner();
   render();
+}
+
+/* 論点で絞り込んでいることを演習画面の頭に出す */
+function drawBanner(){
+  var b=$("tbanner");
+  if(topicFilter==null){ b.hidden=true; b.innerHTML=""; return; }
+  var t=TOPICS[topicFilter];
+  b.hidden=false;
+  b.innerHTML='<div class="t"><b>論点でしぼり込み中</b><span class="hd"></span></div>'+
+    '<button type="button">解除</button>';
+  b.querySelector(".hd").textContent =
+    (t?t[4]:"（不明な論点）")+"　"+queue.length+"枚";
+  b.querySelector("button").onclick=function(){ setTopic(null); };
+}
+
+function setTopic(id){
+  topicFilter = id;
+  if(id!=null){
+    var t=TOPICS[id];
+    if(t && st.f.subj.indexOf(t[0])<0){ st.f.subj.push(t[0]); }
+    if(st.f.mode===2 || st.f.mode===3) st.f.mode=0;   // 論点内は全部まわす
+    save(); drawFilters();
+    if(location.hash!=="#topic="+id) history.replaceState(null,"","#topic="+id);
+  }else if(location.hash){
+    history.replaceState(null,"",location.pathname+location.search);
+  }
+  build();
 }
 
 /* ── 描画 ─────────────────────────── */
@@ -442,6 +510,25 @@ function answer(said){
   });
   det.appendChild(wrapEl);
   r.appendChild(det);
+
+  // この肢が紐づく論点（テキストの見出し）へ寄せる
+  var tids=cardTopics(c);
+  if(tids.length){
+    var tw=document.createElement("div");
+    tw.className="topiclinks";
+    tw.innerHTML='<b>テキストの論点</b>';
+    tids.forEach(function(id){
+      var t=TOPICS[String(id)]; if(!t) return;
+      var a=document.createElement("button");
+      a.type="button"; a.className="tchip";
+      a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>';
+      var sp=document.createElement("span"); sp.textContent=t[4]+"（"+t[6]+"枚）";
+      a.appendChild(sp);
+      a.onclick=function(){ setTopic(String(id)); };
+      tw.appendChild(a);
+    });
+    if(tw.children.length>1) r.appendChild(tw);
+  }
   r.hidden=false;
   judgeUI(true);
   render_stats_only();
@@ -543,55 +630,92 @@ function drawBrowse(){
   if(!found) host.innerHTML='<div class="empty">この回のこの科目は収録がありません。</div>';
 }
 
-/* ── 頻度ビュー ───────────────────── */
-var KSUB=["기업법","감사론","관리회계론","재무회계론(이론)"];
-var qSubj=-1, qGrade=-1;
+/* ── 論点ビュー ───────────────────── */
+var qSubj=-1, qGrade=-1, qSort=0, qShow=50;
+var SORTS=[["肢の多い順",0],["出題の多い順",1],["肢のある論点のみ",2]];
+var TIDS=Object.keys(TOPICS);
+
 function drawFreq(){
   chips($("q-subj"), ["すべて"].concat(SUBJ), function(i){ return qSubj===i-1; },
-    function(i){ qSubj=i-1; drawFreq(); });
+    function(i){ qSubj=i-1; qShow=50; drawFreq(); });
   chips($("q-grade"), ["すべて","A","B"], function(i){ return qGrade===i-1; },
-    function(i){ qGrade=i-1; drawFreq(); });
+    function(i){ qGrade=i-1; qShow=50; drawFreq(); });
+  chips($("q-sort"), SORTS.map(function(s){return s[0];}),
+    function(i){ return qSort===i; }, function(i){ qSort=i; qShow=50; drawFreq(); });
+
+  var pool=TIDS.filter(function(id){
+    var t=TOPICS[id];
+    if(qSubj>=0 && t[0]!==qSubj) return false;
+    if(qGrade>=0 && t[1]!==qGrade) return false;
+    if(qSort===2 && !t[6]) return false;
+    return true;
+  });
+  pool.sort(function(a,b){
+    var A=TOPICS[a], B=TOPICS[b];
+    if(qSort===1) return B[5]-A[5] || B[6]-A[6];
+    return B[6]-A[6] || B[5]-A[5];
+  });
+
   var host=$("q-list"); host.innerHTML="";
-  var n=0;
+  if(!pool.length){
+    host.innerHTML='<div class="empty">該当する論点がありません。</div>';
+    $("q-more").hidden=true; return;
+  }
   var frag=document.createDocumentFragment();
-  TOPICS.forEach(function(t){
-    if(qSubj>=0 && t[0]!==KSUB[qSubj]) return;
-    if(qGrade>=0 && t[1]!==["A","B"][qGrade]) return;
-    n++;
-    if(n>400) return;
+  pool.slice(0,qShow).forEach(function(id){
+    var t=TOPICS[id];
     var row=document.createElement("div"); row.className="freqrow";
-    row.innerHTML='<div class="freqn"><b>'+t[5]+'</b><span>回</span></div>'+
-      '<div class="freqmain"><div class="h"><span class="grade '+t[1]+'">'+t[1]+'</span>'+
-      '<span class="hh"></span></div><div class="c"></div></div>';
-    row.querySelector(".hh").textContent = t[4];
-    row.querySelector(".c").textContent =
-      t[0]+"　"+t[2]+(t[3]?" / "+t[3]:"")+"　｜　"+
-      t[6].map(function(e){return SESS[e];}).join(" ");
+    row.innerHTML='<div class="freqn"><b>'+t[6]+'</b><span>肢</span></div>'+
+      '<div class="freqmain"><div class="h"><span class="grade '+"AB"[t[1]]+'">'+
+      "AB"[t[1]]+'</span><span class="hh"></span></div><div class="c"></div></div>';
+    row.querySelector(".hh").textContent=t[4];
+    row.querySelector(".c").textContent=
+      SUBJ[t[0]]+"　"+t[2]+(t[3]?" / "+t[3]:"")+"　｜　出題 "+t[5]+"回　"+
+      t[7].map(function(e){return SESS[e];}).join(" ");
+    var go=document.createElement("button");
+    go.className="go"; go.type="button";
+    if(t[6]){
+      go.textContent="この論点の肢 "+t[6]+"枚を解く";
+      go.onclick=function(){ setTopic(id); showView(0); };
+    }else{
+      go.textContent="O/X化できる肢がありません";
+      go.disabled=true;
+    }
+    row.appendChild(go);
     frag.appendChild(row);
   });
   host.appendChild(frag);
-  $("q-note").textContent = "見出し語の一致で数えた概算です（"+
-    D.meta.ntopics_hit+" / "+D.meta.ntopics_total+
-    " 論点にヒット）。0回＝未出題とは限りません。表示は上位400件。";
-  if(!n) host.innerHTML='<div class="empty">該当する論点がありません。</div>';
+  $("q-more").hidden = pool.length<=qShow;
+  $("q-more").onclick=function(){ qShow+=100; drawFreq(); };
+  $("q-note").textContent="見出し語の一致で紐づけた概算です（カードのある論点 "+
+    D.meta.ntopics_with_cards+" / 全 "+D.meta.ntopics_total+"論点、論点のついた肢 "+
+    D.meta.ncards_with_topic+" / "+D.meta.ncards+"枚）。0回＝未出題とは限りません。"+
+    "　該当 "+pool.length.toLocaleString()+"件";
 }
 
 /* ── タブ ─────────────────────────── */
 var VIEWS=[["t-drill","v-drill"],["t-browse","v-browse"],["t-freq","v-freq"]];
-VIEWS.forEach(function(v, i){
-  $(v[0]).onclick=function(){
-    VIEWS.forEach(function(w, j){
-      $(w[0]).setAttribute("aria-selected", i===j?"true":"false");
-      $(w[1]).hidden = (i!==j);
-    });
-    $("judge").style.display = (i===0)?"":"none";
-    if(i===1) drawBrowse();
-    if(i===2) drawFreq();
-    window.scrollTo({top:0});
-  };
-});
+function showView(i){
+  VIEWS.forEach(function(w, j){
+    $(w[0]).setAttribute("aria-selected", i===j?"true":"false");
+    $(w[1]).hidden = (i!==j);
+  });
+  $("judge").style.display = (i===0)?"":"none";
+  if(i===1) drawBrowse();
+  if(i===2) drawFreq();
+  window.scrollTo({top:0});
+}
+VIEWS.forEach(function(v, i){ $(v[0]).onclick=function(){ showView(i); }; });
+
+/* チェックリストからの #topic=<id> を受ける */
+function fromHash(){
+  var m=/^#topic=(\d+)$/.exec(location.hash||"");
+  if(m && TOPICS[m[1]]){ setTopic(m[1]); showView(0); return true; }
+  return false;
+}
+window.addEventListener("hashchange", function(){ if(!fromHash()) setTopic(null); });
 
 drawFilters();
-build();
+if(!fromHash()) build();
 })();
 </script>

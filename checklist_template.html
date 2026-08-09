@@ -112,6 +112,10 @@ header{padding:18px 2px 0;display:flex;flex-direction:column;gap:11px}
 .tag.od{background:var(--shu-soft);color:var(--shu)}
 .row .h{font-family:var(--mincho);font-size:.98rem;line-height:1.65;overflow-wrap:anywhere}
 .row .loc{font-size:.66rem;color:var(--ink3);line-height:1.5;overflow-wrap:anywhere}
+.drill{display:block;text-align:center;text-decoration:none;font-size:.76rem;font-weight:700;
+  color:var(--ai);border:1px dashed var(--ai);border-radius:7px;padding:8px 0;
+  letter-spacing:.03em}
+.drill:active{background:var(--ai-soft)}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .acts.one{grid-template-columns:1fr}
 .ab{appearance:none;font-family:inherit;font-size:.82rem;font-weight:700;padding:11px 0;
@@ -259,7 +263,17 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 "use strict";
 var D = JSON.parse(document.getElementById("payload").textContent);
 var SUBJ=D.subjects, CH=D.chapters, SE=D.sections, R=D.rows;
-var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7;
+var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7,R_ID=8,R_N=9;
+var DRILL="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/";
+
+/* この論点の過去問肢へ飛ぶボタン（ドリル側と論点IDを共有している） */
+function drillLink(r){
+  if(!r[R_N]) return null;
+  var a=document.createElement("a");
+  a.className="drill"; a.href=DRILL+"#topic="+r[R_ID];
+  a.textContent="過去問の肢 "+r[R_N]+"枚を解く →";
+  return a;
+}
 
 /* 1-3-7-14-30 は「最初に学習した日から数えた復習日」 */
 var OFF=[1,3,7,14,30];
@@ -388,6 +402,7 @@ function rowEl(i,kind,dueDay){
   el.innerHTML='<div class="meta">'+meta+'</div>'+
     '<div class="h"></div><div class="loc"></div>'+
     '<div class="acts'+(kind==="new"?" one":"")+'"></div>';
+  var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
   el.querySelector(".h").textContent=r[R_H];
   el.querySelector(".loc").textContent=
     CH[r[R_C]]+(SE[r[R_X]]?" / "+SE[r[R_X]]:"")+(r[R_V]?"　"+r[R_V]:"")+
@@ -459,6 +474,7 @@ function drawAll(){
     el.querySelector(".loc").textContent=
       CH[r[R_C]]+(SE[r[R_X]]?" / "+SE[r[R_X]]:"")+(r[R_V]?"　"+r[R_V]:"")+
       (r[R_P]?" p."+r[R_P]:"");
+    var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
     var acts=el.querySelector(".acts");
     if(!m) acts.appendChild(btn("go","学習した（サイクル開始）",function(){
       studied(i); st.newcnt++; save(); drawAll(); }));
