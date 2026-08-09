@@ -80,12 +80,19 @@ header{padding:18px 2px 0;display:flex;flex-direction:column;gap:11px}
 .rhead b{font-size:.95rem;font-weight:700}
 .rhead span{font-size:.66rem;color:var(--ink3);letter-spacing:.06em}
 .rhead i{margin-left:auto;font-style:normal;font-size:.72rem;font-weight:700;color:var(--ai)}
-.rrow{display:flex;align-items:baseline;gap:9px;padding:8px 12px;font-size:.8rem;
-  border-bottom:1px solid var(--rule2);font-variant-numeric:tabular-nums}
+.rrow{padding:9px 12px;border-bottom:1px solid var(--rule2);
+  font-variant-numeric:tabular-nums}
 .rrow:last-child{border-bottom:0}
-.rrow .s{flex:0 0 68px;color:var(--ink2);font-weight:600;font-size:.74rem}
-.rrow .p{flex:1;min-width:0;overflow-wrap:anywhere}
-.rrow .n{flex:0 0 auto;color:var(--ink3);font-size:.72rem}
+.rtop{display:flex;align-items:baseline;gap:9px;font-size:.8rem}
+.rtop .s{flex:0 0 68px;color:var(--ink2);font-weight:600;font-size:.74rem}
+.rtop .p{flex:1;min-width:0;overflow-wrap:anywhere}
+.rtop .n{flex:0 0 auto;color:var(--ink3);font-size:.72rem}
+.rnames{margin-top:4px;padding-left:77px;font-family:var(--mincho);font-size:.82rem;
+  line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.rdrill{display:block;text-align:center;text-decoration:none;font-size:.75rem;font-weight:700;
+  color:var(--ai);border-top:1px solid var(--rule2);padding:10px 0;letter-spacing:.03em}
+.rdrill:active{background:var(--ai-soft)}
+@media (max-width:420px){ .rnames{padding-left:0} }
 .seg button{appearance:none;border:0;background:transparent;color:var(--ink2);font-family:inherit;
   font-size:.82rem;font-weight:600;padding:10px 4px;cursor:pointer;border-right:1px solid var(--rule)}
 .seg button:last-child{border-right:0}
@@ -587,8 +594,11 @@ function drawRange(){
 
     var dt=new Date(); dt.setDate(dt.getDate()+d);
     var card=document.createElement("div"); card.className="row rday";
-    var html='<div class="rhead"><b>'+(dt.getMonth()+1)+"/"+dt.getDate()+
-      '</b><span>'+(d===0?"오늘":"D+"+d)+'</span><i>'+todays.length+'개</i></div>';
+    var head=document.createElement("div"); head.className="rhead";
+    head.innerHTML='<b>'+(dt.getMonth()+1)+"/"+dt.getDate()+
+      '</b><span>'+(d===0?"오늘":"D+"+d)+'</span><i>'+todays.length+'논점</i>';
+    card.appendChild(head);
+
     for(var s=0;s<4;s++){
       var mine=todays.filter(function(i){ return R[i][R_S]===s; });
       if(!mine.length) continue;
@@ -596,10 +606,29 @@ function drawRange(){
       var span=(a[R_V]||"")+" p."+a[R_P];
       if(a[R_V]!==b[R_V]) span+=" ~ "+(b[R_V]||"")+" p."+b[R_P];
       else if(a[R_P]!==b[R_P]) span+=" ~ p."+b[R_P];
-      html+='<div class="rrow"><span class="s">'+SUBJ[s]+'</span>'+
-        '<span class="p">'+span+'</span><span class="n">'+mine.length+'</span></div>';
+
+      var row=document.createElement("div"); row.className="rrow";
+      row.innerHTML='<div class="rtop"><span class="s"></span>'+
+        '<span class="p"></span><span class="n">'+mine.length+'</span></div>'+
+        '<div class="rnames"></div>';
+      row.querySelector(".s").textContent=SUBJ[s];
+      row.querySelector(".p").textContent=span;
+      // 何という論点から何という論点までか
+      row.querySelector(".rnames").textContent =
+        mine.length===1 ? a[R_H] : a[R_H]+"　~　"+b[R_H];
+      card.appendChild(row);
     }
-    card.innerHTML=html;
+
+    // その日の論点のうち、過去問の肢を持つものへまとめて飛ぶ
+    var withCards=todays.filter(function(i){ return R[i][R_N]>0; });
+    if(withCards.length){
+      var ids=withCards.map(function(i){ return R[i][R_ID]; });
+      var a2=document.createElement("a");
+      a2.className="rdrill";
+      a2.href=DRILL+"#topics="+ids.join(",");
+      a2.textContent="이 날 분량 과거문 풀기 (논점 "+withCards.length+"개) →";
+      card.appendChild(a2);
+    }
     frag.appendChild(card);
     d++;
   }

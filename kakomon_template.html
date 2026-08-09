@@ -353,7 +353,7 @@ function ck(c){ return c[C_E]+"."+c[C_S]+"."+c[C_N]+"."+c[C_M]; }
 var RANGES = [["전체",0],["최근 10회",10],["최근 5회",5],["최근 3회",3]];
 var MODES  = [["최신순",0],["오래된순",1],["복습필요만",2],["미해답만",3]];
 var queue=[], qi=0, answered=false;
-var topicFilter=null;              // 論点IDで絞り込み中なら、その文字列
+var topicFilter=null;              // 絞り込み中の論点ID配列（1件でも配列）
 
 /* 論点は肢ごとに持たせている（同じ問題でも肢によって論点が違う） */
 function cardTopics(c){ return c[C_T] || []; }
@@ -376,12 +376,15 @@ function build(){
   if(r) minE = Math.max(0, SESS.length - r);
   var sel = st.f.subj;
   var mode = st.f.mode;
-  var tf = topicFilter==null ? -1 : parseInt(topicFilter,10);
+  var tset = null;
+  if(topicFilter){ tset={}; topicFilter.forEach(function(x){ tset[x]=1; }); }
   var out = [];
   for(var i=0;i<CARDS.length;i++){
     var c = CARDS[i];
-    if(tf>=0){
-      if(cardTopics(c).indexOf(tf)<0) continue;
+    if(tset){
+      var ts=cardTopics(c), hit=false;
+      for(var z=0;z<ts.length;z++){ if(tset[ts[z]]){ hit=true; break; } }
+      if(!hit) continue;
     }else{
       if(c[C_E] < minE) continue;
       if(sel.indexOf(c[C_S])<0) continue;
@@ -407,27 +410,41 @@ function build(){
 /* 論点で絞り込んでいることを演習画面の頭に出す */
 function drawBanner(){
   var b=$("tbanner");
-  if(topicFilter==null){ b.hidden=true; b.innerHTML=""; return; }
-  var t=TOPICS[topicFilter];
+  if(!topicFilter){ b.hidden=true; b.innerHTML=""; return; }
   b.hidden=false;
   b.innerHTML='<div class="t"><b>논점으로 좁히는 중</b><span class="hd"></span></div>'+
     '<button type="button">해제</button>';
-  b.querySelector(".hd").textContent =
-    (t?t[4]:"(알 수 없는 논점)")+"　"+queue.length+"개";
+  var label;
+  if(topicFilter.length===1){
+    var t=TOPICS[String(topicFilter[0])];
+    label=(t?t[4]:"(알 수 없는 논점)");
+  }else{
+    label="논점 "+topicFilter.length+"개";
+  }
+  b.querySelector(".hd").textContent = label+"　지문 "+queue.length+"개";
   b.querySelector("button").onclick=function(){ setTopic(null); };
 }
 
-function setTopic(id){
-  topicFilter = id;
-  if(id!=null){
-    var t=TOPICS[id];
-    if(t && st.f.subj.indexOf(t[0])<0){ st.f.subj.push(t[0]); }
-    if(st.f.mode===2 || st.f.mode===3) st.f.mode=0;   // 論点内は全部まわす
-    save(); drawFilters();
-    if(location.hash!=="#topic="+id) history.replaceState(null,"","#topic="+id);
-  }else if(location.hash){
-    history.replaceState(null,"",location.pathname+location.search);
+/* 単一IDでも配列でも受ける。進度表からは1日ぶんの論点がまとめて来る。 */
+function setTopic(sel){
+  if(sel==null || (sel.length===0)){
+    topicFilter=null;
+    if(location.hash) history.replaceState(null,"",location.pathname+location.search);
+    build(); return;
   }
+  var arr = (typeof sel==="string"||typeof sel==="number") ? [sel] : sel;
+  arr = arr.map(function(x){ return parseInt(x,10); })
+           .filter(function(x){ return !isNaN(x) && TOPICS[String(x)]; });
+  if(!arr.length){ topicFilter=null; build(); return; }
+  topicFilter = arr;
+  arr.forEach(function(id){
+    var t=TOPICS[String(id)];
+    if(t && st.f.subj.indexOf(t[0])<0) st.f.subj.push(t[0]);
+  });
+  if(st.f.mode===2 || st.f.mode===3) st.f.mode=0;   // 論点内は全部まわす
+  save(); drawFilters();
+  var h = arr.length===1 ? "#topic="+arr[0] : "#topics="+arr.join(",");
+  if(location.hash!==h) history.replaceState(null,"",h);
   build();
 }
 
@@ -755,8 +772,14 @@ VIEWS.forEach(function(v, i){ $(v[0]).onclick=function(){ showView(i); }; });
 
 /* チェックリストからの #topic=<id> を受ける */
 function fromHash(){
-  var m=/^#topic=(\d+)$/.exec(location.hash||"");
+  var h=location.hash||"";
+  var m=/^#topic=(\d+)$/.exec(h);
   if(m && TOPICS[m[1]]){ setTopic(m[1]); showView(0); return true; }
+  m=/^#topics=([\d,]+)$/.exec(h);
+  if(m){
+    var ids=m[1].split(",").filter(function(x){ return x && TOPICS[x]; });
+    if(ids.length){ setTopic(ids); showView(0); return true; }
+  }
   return false;
 }
 window.addEventListener("hashchange", function(){ if(!fromHash()) setTopic(null); });
