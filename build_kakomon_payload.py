@@ -38,9 +38,11 @@ for q in qs:
                       q["choices"], tids])
     qi = len(questions) - 1
     if q["truth"]:
+        sht = q.get("shi_topics", {})
         for mk, tv in q["truth"].items():
             cards.append([s, e, q["no"], mk, 1 if tv else 0,
-                          th, q["shi"].get(mk, ""), qi])
+                          th, q["shi"].get(mk, ""), qi,
+                          sorted(sht.get(mk, []))])   # この肢に紐づく論点
 
 # 論点ID = ab_data.json（＝kakomon_topic_freq.json）上の添字。
 # チェックリスト側と同じIDなので、両ツールを相互リンクできる。
@@ -49,7 +51,7 @@ SUBJ_JP = {"기업법": "企業法", "감사론": "監査論",
 
 ncards = collections.Counter()
 for c in cards:
-    for t in questions[c[7]][8]:
+    for t in c[8]:
         ncards[t] += 1
 
 topics = {}
@@ -65,8 +67,7 @@ payload = {"subjects": SUBJ, "sessions": SESS, "cards": cards,
            "questions": questions, "topics": topics,
            "meta": {"nq": len(questions), "ncards": len(cards),
                     "ntopics_total": len(tp), "ntopics_hit": len(topics),
-                    "ncards_with_topic": sum(
-                        1 for c in cards if questions[c[7]][8]),
+                    "ncards_with_topic": sum(1 for c in cards if c[8]),
                     "ntopics_with_cards": sum(
                         1 for v in topics.values() if v[6])}}
 

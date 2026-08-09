@@ -11,9 +11,9 @@ try:
     qs = json.load(open("kakomon_questions.json", encoding="utf-8"))
     per = collections.Counter()
     for q in qs:
-        n = len(q.get("truth") or {})
-        for t in q.get("topics", []):
-            per[t] += n
+        for mk, ids in (q.get("shi_topics") or {}).items():
+            for t in ids:
+                per[t] += 1
     for i, t in enumerate(tp):
         if t.get("freq"):
             freq[i] = t["freq"]

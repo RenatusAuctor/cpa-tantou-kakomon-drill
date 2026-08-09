@@ -314,7 +314,7 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
 var D = JSON.parse(document.getElementById("payload").textContent);
 var SUBJ = D.subjects, SESS = D.sessions, CARDS = D.cards, QS = D.questions, TOPICS = D.topics;
 // カードの並び：会 → 科目 → 問 → 肢
-var C_S=0, C_E=1, C_N=2, C_M=3, C_V=4, C_TH=5, C_TX=6, C_Q=7;
+var C_S=0, C_E=1, C_N=2, C_M=3, C_V=4, C_TH=5, C_TX=6, C_Q=7, C_T=8;
 
 var KEY = "cpa-kakomon-v1";
 var st = load();
@@ -341,7 +341,8 @@ var MODES  = [["新しい順",0],["古い順",1],["要復習のみ",2],["未解�
 var queue=[], qi=0, answered=false;
 var topicFilter=null;              // 論点IDで絞り込み中なら、その文字列
 
-function cardTopics(c){ return QS[c[C_Q]][8] || []; }
+/* 論点は肢ごとに持たせている（同じ問題でも肢によって論点が違う） */
+function cardTopics(c){ return c[C_T] || []; }
 
 function build(){
   var minE = 0;
@@ -687,9 +688,10 @@ function drawFreq(){
   host.appendChild(frag);
   $("q-more").hidden = pool.length<=qShow;
   $("q-more").onclick=function(){ qShow+=100; drawFreq(); };
-  $("q-note").textContent="見出し語の一致で紐づけた概算です（カードのある論点 "+
-    D.meta.ntopics_with_cards+" / 全 "+D.meta.ntopics_total+"論点、論点のついた肢 "+
-    D.meta.ncards_with_topic+" / "+D.meta.ncards+"枚）。0回＝未出題とは限りません。"+
+  $("q-note").textContent="教材の本文と肢の文面の似かたで機械的に寄せた概算です"+
+    "（肢のある論点 "+D.meta.ntopics_with_cards+" / 全 "+D.meta.ntopics_total+
+    "論点、論点のついた肢 "+D.meta.ncards_with_topic+" / "+D.meta.ncards+"枚）。"+
+    "取り違えは残りますし、0回＝未出題でもありません。"+
     "　該当 "+pool.length.toLocaleString()+"件";
 }
 
