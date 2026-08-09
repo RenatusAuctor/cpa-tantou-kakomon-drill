@@ -60,6 +60,16 @@ header{padding:18px 2px 0;display:flex;flex-direction:column;gap:11px}
 .cycle b{display:block;font-size:.95rem;font-weight:700;color:var(--ai)}
 .cycle span{display:block;font-size:.57rem;color:var(--ink3);letter-spacing:.05em;margin-top:1px}
 
+/* 試験日から逆算したペース */
+.pace{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.pace div{background:var(--card);padding:9px 5px;text-align:center;
+  font-variant-numeric:tabular-nums}
+.pace b{display:block;font-size:1.02rem;font-weight:700}
+.pace span{display:block;font-size:.6rem;color:var(--ink3);letter-spacing:.05em;margin-top:2px}
+.pace .over b{color:var(--shu)}
+.pace .fine b{color:var(--midori)}
+
 .seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);
   border-radius:9px;overflow:hidden;background:var(--card)}
 .seg button{appearance:none;border:0;background:transparent;color:var(--ink2);font-family:inherit;
@@ -172,6 +182,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
     </div>
     <p class="note" style="margin:0">今日は「昨日はじめた論点」「3日前」「7日前」「14日前」「30日前」が戻ってきます。
       忘れていた論点は、その日を起点にサイクルをやり直します。</p>
+    <div class="pace" id="pace"></div>
     <div class="seg" role="tablist">
       <button role="tab" id="t-today" aria-selected="true">今日</button>
       <button role="tab" id="t-all" aria-selected="false">一覧</button>
@@ -253,6 +264,9 @@ var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7;
 /* 1-3-7-14-30 は「最初に学習した日から数えた復習日」 */
 var OFF=[1,3,7,14,30];
 var KEY="cpa-checklist-v1";
+/* 令和9年 第Ⅰ回短答式：2026-12-13。最後の30日目が試験前に来るには、
+   新規の投入を「試験の30日前」までに終える必要がある。 */
+var EXAM=Math.floor(Date.UTC(2026,11,13)/86400000);
 
 function dayNo(d){ d=d||new Date();
   return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000); }
@@ -261,9 +275,9 @@ var TODAY=dayNo();
 var st=load();
 function load(){
   try{ var o=JSON.parse(localStorage.getItem(KEY)||"{}");
-    return {m:o.m||{}, cap:(o.cap==null?60:o.cap), subj:o.subj||[0,1,2,3],
+    return {m:o.m||{}, cap:(o.cap==null?50:o.cap), subj:o.subj||[0,1,2,3],
             grade:(o.grade==null?-1:o.grade), newday:o.newday||"", newcnt:o.newcnt||0}; }
-  catch(e){ return {m:{},cap:60,subj:[0,1,2,3],grade:-1,newday:"",newcnt:0}; }
+  catch(e){ return {m:{},cap:50,subj:[0,1,2,3],grade:-1,newday:"",newcnt:0}; }
 }
 var sT=null;
 function save(){ clearTimeout(sT); sT=setTimeout(function(){
@@ -322,6 +336,7 @@ function drawToday(){
     " / B "+D.meta.b+"）";
 
   var untouched=R.length-c.learning-c.fin;
+  drawPace(c.nw.length);
   $("p-l").textContent="未学習 "+untouched.toLocaleString();
   $("p-r").textContent="学習中 "+c.learning.toLocaleString()+
     "　突破 "+c.fin.toLocaleString();
@@ -345,6 +360,19 @@ function drawToday(){
   if(!newList.length) host.innerHTML='<div class="empty">'+
     (room?"この条件の未学習論点はありません。":"今日の新規上限に達しました。")+'</div>';
   newList.slice(0,60).forEach(function(i){ host.appendChild(rowEl(i,"new")); });
+}
+
+/* 試験日から逆算した必要ペース。新規は「試験-30日」までに入れ切らないと
+   最後の30日目が試験に間に合わない。 */
+function drawPace(remaining){
+  var toExam=EXAM-TODAY, toStop=EXAM-30-TODAY;
+  var need = toStop>0 ? Math.ceil(remaining/toStop) : remaining;
+  var cls = remaining===0 ? "fine" : (need>st.cap ? "over" : "fine");
+  document.getElementById("pace").innerHTML=
+    '<div><b>'+(toExam>0?toExam:0)+'</b><span>試験まで（日）</span></div>'+
+    '<div><b>'+(toStop>0?toStop:0)+'</b><span>新規の打切りまで</span></div>'+
+    '<div class="'+cls+'"><b>'+(remaining===0?"完了":need+"件")+
+    '</b><span>必要ペース／日</span></div>';
 }
 
 function rowEl(i,kind,dueDay){
