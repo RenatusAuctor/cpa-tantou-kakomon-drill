@@ -47,6 +47,8 @@ header{padding:18px 2px 0;display:flex;flex-direction:column;gap:12px}
 .title h1{margin:0;font-size:1.02rem;font-weight:700;letter-spacing:.02em}
 .title .sub{font-size:.72rem;color:var(--ink3);letter-spacing:.07em;
   font-variant-numeric:tabular-nums}
+.xlink{font-size:.71rem;color:var(--ai);text-decoration:none;border:1px solid var(--rule);
+  padding:4px 9px;border-radius:6px}
 
 /* セグメント切替 */
 .seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);
@@ -185,6 +187,8 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
     <div class="title">
       <h1>短答式 過去問 肢別ドリル</h1>
       <span class="sub" id="scope"></span>
+      <a class="xlink"
+         href="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/checklist.html">論点チェックリスト →</a>
     </div>
     <div class="seg" role="tablist">
       <button role="tab" id="t-drill" aria-selected="true">演習</button>

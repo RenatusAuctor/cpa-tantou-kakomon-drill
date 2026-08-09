@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
-import io, os
+"""テンプレートにペイロードを差し込んで配布用HTMLを書き出す。"""
 
-tpl = open("kakomon_template.html", encoding="utf-8").read()
-pay = open("kakomon_payload.json", encoding="utf-8").read()
-# </script> で閉じられないようにする
-pay = pay.replace("</", "<\\/")
-out = tpl.replace("__PAYLOAD__", pay)
-open("kakomon_drill.html", "w", encoding="utf-8").write(out)
-print("kakomon_drill.html %.2f MB" % (len(out.encode("utf-8")) / 1024 / 1024))
+JOBS = [
+    ("kakomon_template.html",  "kakomon_payload.json",   "index.html"),
+    ("checklist_template.html", "checklist_payload.json", "checklist.html"),
+]
+
+for tpl_p, pay_p, out_p in JOBS:
+    tpl = open(tpl_p, encoding="utf-8").read()
+    pay = open(pay_p, encoding="utf-8").read()
+    pay = pay.replace("</", "<\\/")          # </script> で閉じられないように
+    out = tpl.replace("__PAYLOAD__", pay)
+    open(out_p, "w", encoding="utf-8").write(out)
+    print("%-16s %6.2f MB" % (out_p, len(out.encode("utf-8")) / 1024 / 1024))

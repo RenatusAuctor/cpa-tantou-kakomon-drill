@@ -16,3 +16,6 @@ ab_topics_raw.txt
 ab_topics_kanri_raw.txt
 sample_pages.txt
 __pycache__/
+checklist_payload.json
+checklist_test.html
+make_test_page.py
