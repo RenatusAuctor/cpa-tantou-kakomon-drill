@@ -21,7 +21,8 @@ try:
 except FileNotFoundError:
     pass
 
-SUBJ = ["기업법", "감사론", "관리회계론", "재무회계론(이론)"]
+SUBJ = ["기업법", "감사론", "관리회계론", "재무회계론(이론)"]      # ab_data 側のキー
+SUBJ_KO = ["기업법", "감사론", "관리회계론", "재무회계론"]          # 画面表示
 si = {s: i for i, s in enumerate(SUBJ)}
 
 chaps, secs = [], []
@@ -46,7 +47,7 @@ for i, t in enumerate(src):
 # 教材の並び（科目 → 巻 → 頁）を保つ
 rows.sort(key=lambda r: (r[0], r[5], r[6]))
 
-payload = {"subjects": SUBJ, "chapters": chaps, "sections": secs, "rows": rows,
+payload = {"subjects": SUBJ_KO, "chapters": chaps, "sections": secs, "rows": rows,
            "meta": {"n": len(rows),
                     "a": sum(1 for r in rows if r[1] == 0),
                     "b": sum(1 for r in rows if r[1] == 1),

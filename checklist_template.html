@@ -1,4 +1,4 @@
-<title>論点チェックリスト｜1-3-7-14-30</title>
+<title>논점 체크리스트 ｜ 1-3-7-14-30</title>
 <style>
 :root{
   --ground:#FAFBFC; --card:#FFFFFF; --paper:#F1F4F7;
@@ -70,8 +70,22 @@ header{padding:18px 2px 0;display:flex;flex-direction:column;gap:11px}
 .pace .over b{color:var(--shu)}
 .pace .fine b{color:var(--midori)}
 
-.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);
+.seg{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--rule);
   border-radius:9px;overflow:hidden;background:var(--card)}
+
+/* 진도표：하루치 카드 */
+.rday{gap:0;padding:0;overflow:hidden}
+.rhead{display:flex;align-items:baseline;gap:9px;padding:9px 12px;background:var(--paper);
+  border-bottom:1px solid var(--rule2);font-variant-numeric:tabular-nums}
+.rhead b{font-size:.95rem;font-weight:700}
+.rhead span{font-size:.66rem;color:var(--ink3);letter-spacing:.06em}
+.rhead i{margin-left:auto;font-style:normal;font-size:.72rem;font-weight:700;color:var(--ai)}
+.rrow{display:flex;align-items:baseline;gap:9px;padding:8px 12px;font-size:.8rem;
+  border-bottom:1px solid var(--rule2);font-variant-numeric:tabular-nums}
+.rrow:last-child{border-bottom:0}
+.rrow .s{flex:0 0 68px;color:var(--ink2);font-weight:600;font-size:.74rem}
+.rrow .p{flex:1;min-width:0;overflow-wrap:anywhere}
+.rrow .n{flex:0 0 auto;color:var(--ink3);font-size:.72rem}
 .seg button{appearance:none;border:0;background:transparent;color:var(--ink2);font-family:inherit;
   font-size:.82rem;font-weight:600;padding:10px 4px;cursor:pointer;border-right:1px solid var(--rule)}
 .seg button:last-child{border-right:0}
@@ -177,89 +191,97 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 <div class="wrap">
   <header>
     <div class="title">
-      <h1>論点チェックリスト</h1>
+      <h1>논점 체크리스트</h1>
       <span class="sub" id="scope"></span>
       <a class="xlink" id="xlink"
-         href="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/">過去問ドリル →</a>
+         href="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/">과거문 드릴 →</a>
     </div>
     <div class="cycle">
-      <div><b>1</b><span>1回目</span></div>
-      <div><b>3</b><span>2回目</span></div>
-      <div><b>7</b><span>3回目</span></div>
-      <div><b>14</b><span>4回目</span></div>
-      <div><b>30</b><span>5回目</span></div>
-      <div><b>済</b><span>長期記憶</span></div>
+      <div><b>1</b><span>1회차</span></div>
+      <div><b>3</b><span>2회차</span></div>
+      <div><b>7</b><span>3회차</span></div>
+      <div><b>14</b><span>4회차</span></div>
+      <div><b>30</b><span>5회차</span></div>
+      <div><b>완</b><span>장기기억</span></div>
     </div>
-    <p class="note" style="margin:0">今日は「昨日はじめた論点」「3日前」「7日前」「14日前」「30日前」が戻ってきます。
-      忘れていた論点は、その日を起点にサイクルをやり直します。</p>
+    <p class="note" style="margin:0">오늘은 「어제 시작한 논점」 「3일 전」 「7일 전」 「14일 전」 「30일 전」이 돌아옵니다.
+      잊은 논점은 그날을 기점으로 사이클을 다시 시작합니다.</p>
     <div class="pace" id="pace"></div>
     <div class="seg" role="tablist">
-      <button role="tab" id="t-today" aria-selected="true">今日</button>
-      <button role="tab" id="t-all" aria-selected="false">一覧</button>
-      <button role="tab" id="t-plan" aria-selected="false">予定</button>
+      <button role="tab" id="t-today" aria-selected="true">오늘</button>
+      <button role="tab" id="t-range" aria-selected="false">진도</button>
+      <button role="tab" id="t-all" aria-selected="false">전체</button>
+      <button role="tab" id="t-plan" aria-selected="false">일정</button>
     </div>
   </header>
 
-  <!-- ══ 今日 ══ -->
+  <!-- ══ 오늘 ══ -->
   <section id="v-today" style="display:flex;flex-direction:column;gap:13px">
     <div class="stats">
-      <div class="stat late"><b id="s-late">0</b><span>遅れ</span></div>
-      <div class="stat due"><b id="s-due">0</b><span>今日の復習</span></div>
-      <div class="stat"><b id="s-new">0</b><span>今日の新規</span></div>
-      <div class="stat done"><b id="s-fin">0</b><span>30日突破</span></div>
+      <div class="stat late"><b id="s-late">0</b><span>지연</span></div>
+      <div class="stat due"><b id="s-due">0</b><span>오늘 복습</span></div>
+      <div class="stat"><b id="s-new">0</b><span>오늘 신규</span></div>
+      <div class="stat done"><b id="s-fin">0</b><span>30일 완주</span></div>
     </div>
     <div>
       <div class="proglabel"><span id="p-l"></span><span id="p-r"></span></div>
       <div class="prog" id="prog" style="margin-top:5px"></div>
     </div>
 
-    <div class="sect"><h2>復習</h2><span class="n" id="n-rev"></span></div>
+    <div class="sect"><h2>복습</h2><span class="n" id="n-rev"></span></div>
     <div class="list" id="l-rev"></div>
 
-    <div class="sect"><h2>新規</h2><span class="n" id="n-new"></span></div>
+    <div class="sect"><h2>신규</h2><span class="n" id="n-new"></span></div>
     <div class="list" id="l-new"></div>
 
     <details class="panel">
       <summary style="cursor:pointer;font-size:.78rem;font-weight:700;color:var(--ai);
-        letter-spacing:.05em">設定と進捗</summary>
+        letter-spacing:.05em">설정과 진도</summary>
       <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
-        <div class="frow"><div class="flabel">科目</div><div class="chips" id="f-subj"></div></div>
-        <div class="frow"><div class="flabel">重要度</div><div class="chips" id="f-grade"></div></div>
+        <div class="frow"><div class="flabel">과목</div><div class="chips" id="f-subj"></div></div>
+        <div class="frow"><div class="flabel">중요도</div><div class="chips" id="f-grade"></div></div>
         <div class="frow">
-          <div class="flabel">1日の新規上限</div>
+          <div class="flabel">하루 신규 상한</div>
           <input type="number" id="cap" min="0" max="500" step="10">
-          <div class="hint">新規を入れすぎると 1・3・7 日後にまとめて返ってきます。
-            復習の山は「予定」タブで先に確認してください。</div>
+          <div class="hint">신규를 너무 많이 넣으면 1·3·7일 뒤에 한꺼번에 돌아옵니다.
+            복습의 산은 「일정」 탭에서 미리 확인하세요.</div>
         </div>
         <div class="frow" id="sync"></div>
         <div class="frow">
-          <div class="flabel">進捗</div>
-          <button class="linkbtn" id="reset">この端末の学習記録をすべて消す</button>
+          <div class="flabel">진도</div>
+          <button class="linkbtn" id="reset">이 기기의 학습 기록 전부 삭제</button>
           <div class="hint" id="storenote"></div>
         </div>
       </div>
     </details>
   </section>
 
-  <!-- ══ 一覧 ══ -->
-  <section id="v-all" hidden style="display:flex;flex-direction:column;gap:13px">
-    <div class="panel">
-      <div class="frow"><div class="flabel">科目</div><div class="chips" id="a-subj"></div></div>
-      <div class="frow"><div class="flabel">重要度</div><div class="chips" id="a-grade"></div></div>
-      <div class="frow"><div class="flabel">状態</div><div class="chips" id="a-state"></div></div>
-      <div class="frow"><div class="flabel">章</div><div class="chips" id="a-chap"></div></div>
-    </div>
-    <div class="sect"><h2>論点</h2><span class="n" id="n-all"></span></div>
-    <div class="list" id="l-all"></div>
-    <button class="ab" id="more" hidden>さらに表示</button>
+  <!-- ══ 진도 ══ -->
+  <section id="v-range" hidden style="display:none;flex-direction:column;gap:13px">
+    <p class="note" id="r-head"></p>
+    <div class="list" id="r-list"></div>
+    <button class="ab" id="r-more" hidden>더 보기</button>
   </section>
 
-  <!-- ══ 予定 ══ -->
+  <!-- ══ 전체 ══ -->
+  <section id="v-all" hidden style="display:flex;flex-direction:column;gap:13px">
+    <div class="panel">
+      <div class="frow"><div class="flabel">과목</div><div class="chips" id="a-subj"></div></div>
+      <div class="frow"><div class="flabel">중요도</div><div class="chips" id="a-grade"></div></div>
+      <div class="frow"><div class="flabel">상태</div><div class="chips" id="a-state"></div></div>
+      <div class="frow"><div class="flabel">장</div><div class="chips" id="a-chap"></div></div>
+    </div>
+    <div class="sect"><h2>논점</h2><span class="n" id="n-all"></span></div>
+    <div class="list" id="l-all"></div>
+    <button class="ab" id="more" hidden>더 보기</button>
+  </section>
+
+  <!-- ══ 일정 ══ -->
   <section id="v-plan" hidden style="display:flex;flex-direction:column;gap:13px">
-    <p class="note">これから30日間、各日に戻ってくる復習の件数です。
-      今日の新規をどれだけ入れるかで山の形が変わります。</p>
+    <p class="note">앞으로 30일간, 각 날짜에 돌아올 복습 건수입니다.
+      오늘 신규를 얼마나 넣느냐에 따라 산의 모양이 달라집니다.</p>
     <div class="chart" id="chart"></div>
-    <div class="sect"><h2>内訳</h2><span class="n" id="n-plan"></span></div>
+    <div class="sect"><h2>내역</h2><span class="n" id="n-plan"></span></div>
     <div class="sched" id="sched"></div>
   </section>
 </div>
@@ -279,7 +301,7 @@ var DRILL="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/";
 /* 教材のどこか：巻・頁と、章／節 */
 function where(r){
   var a=[];
-  if(r[R_V]) a.push(String(r[R_V]).replace("권","巻"));
+  if(r[R_V]) a.push(String(r[R_V]));
   if(r[R_P]) a.push("p."+r[R_P]);
   var b=[];
   if(CH[r[R_C]]) b.push(CH[r[R_C]]);
@@ -292,7 +314,7 @@ function drillLink(r){
   if(!r[R_N]) return null;
   var a=document.createElement("a");
   a.className="drill"; a.href=DRILL+"#topic="+r[R_ID];
-  a.textContent="過去問の肢 "+r[R_N]+"枚を解く →";
+  a.textContent="이 논점 과거문 지문 "+r[R_N]+"개 풀기 →";
   return a;
 }
 
@@ -318,7 +340,7 @@ var sT=null;
 function save(){ clearTimeout(sT); sT=setTimeout(function(){
   try{ localStorage.setItem(KEY,JSON.stringify(st)); }
   catch(e){ var n=document.getElementById("storenote");
-    if(n) n.textContent="保存できません（プライベートモードの可能性があります）。"; } },200); }
+    if(n) n.textContent="저장할 수 없습니다 (시크릿 모드일 수 있습니다)."; } },200); }
 if(st.newday!==String(TODAY)){ st.newday=String(TODAY); st.newcnt=0; }
 
 function rec(i){ return st.m[i]; }
@@ -358,43 +380,73 @@ function collect(){
   return {rev:rev, nw:nw, fin:fin, learning:learning};
 }
 
+/* 그날 몫을 과목별 남은 양에 비례해 나눈다(최대잉여법).
+   한 과목만 40일 내리 도는 것을 막고, 매일 4과목을 조금씩 건드리게 한다. */
+function allot(pool, budget){
+  var by=[[],[],[],[]];
+  pool.forEach(function(i){ by[R[i][R_S]].push(i); });
+  var total=pool.length;
+  if(!total || budget<=0) return [];
+  budget=Math.min(budget, total);
+  var quota=[], rem=[], used=0, s;
+  for(s=0;s<4;s++){
+    var exact=budget*by[s].length/total;
+    quota[s]=Math.min(by[s].length, Math.floor(exact));
+    rem.push([exact-Math.floor(exact), s]);
+    used+=quota[s];
+  }
+  rem.sort(function(a,b){ return b[0]-a[0]; });
+  var guard=0;
+  while(used<budget && guard++<budget+8){
+    var moved=false;
+    for(var r=0;r<rem.length && used<budget;r++){
+      var t=rem[r][1];
+      if(quota[t]<by[t].length){ quota[t]++; used++; moved=true; }
+    }
+    if(!moved) break;
+  }
+  var out=[];
+  for(s=0;s<4;s++) out=out.concat(by[s].slice(0, quota[s]));
+  return out;
+}
+
 function drawToday(){
   var c=collect();
   var late=0; for(var j=0;j<c.rev.length;j++) if(c.rev[j][1]<TODAY) late++;
   var room=Math.max(0, st.cap - st.newcnt);
-  var newList=c.nw.slice(0, room);
+  var newList=allot(c.nw, room);
 
   $("s-late").textContent=late;
   $("s-due").textContent=c.rev.length-late;
   $("s-new").textContent=st.newcnt+" / "+st.cap;
   $("s-fin").textContent=c.fin;
-  $("scope").textContent=D.meta.n.toLocaleString()+"論点（A "+D.meta.a+
+  $("scope").textContent=D.meta.n.toLocaleString()+"논점 (A "+D.meta.a+
     " / B "+D.meta.b+"）";
 
   var untouched=R.length-c.learning-c.fin;
   drawPace(c.nw.length);
-  $("p-l").textContent="未学習 "+untouched.toLocaleString();
-  $("p-r").textContent="学習中 "+c.learning.toLocaleString()+
-    "　突破 "+c.fin.toLocaleString();
+  $("p-l").textContent="미학습 "+untouched.toLocaleString();
+  $("p-r").textContent="학습중 "+c.learning.toLocaleString()+
+    "　완주 "+c.fin.toLocaleString();
   $("prog").innerHTML='<i class="d" style="width:'+(c.fin/R.length*100)+'%"></i>'+
     '<i class="g" style="width:'+(c.learning/R.length*100)+'%"></i>';
 
-  $("n-rev").textContent=c.rev.length+"件"+(late?"（うち遅れ "+late+"）":"");
-  $("n-new").textContent=newList.length+"件"+(room<c.nw.length?
-    "（上限まで／残り "+c.nw.length.toLocaleString()+"）":"");
+  $("n-rev").textContent=c.rev.length+"건"+(late?"(그중 지연  "+late+"）":"");
+  $("n-new").textContent=newList.length+"건"+(room<c.nw.length?
+    "(상한까지 / 남은  "+c.nw.length.toLocaleString()+"）":"");
 
   var host=$("l-rev"); host.innerHTML="";
-  if(!c.rev.length) host.innerHTML='<div class="empty">今日戻ってくる論点はありません。</div>';
+  if(!c.rev.length) host.innerHTML='<div class="empty">오늘 돌아올 논점이 없습니다.</div>';
   c.rev.slice(0,120).forEach(function(p){ host.appendChild(rowEl(p[0],"rev",p[1])); });
   if(c.rev.length>120){
     var m=document.createElement("p"); m.className="note";
-    m.textContent="表示は120件までです。片づけると続きが出ます。";
+    m.textContent="120건까지만 표시합니다. 처리하면 다음이 나옵니다.";
     host.appendChild(m);
   }
 
   host=$("l-new"); host.innerHTML="";
   if(!newList.length) host.innerHTML='<div class="empty">'+
-    (room?"この条件の未学習論点はありません。":"今日の新規上限に達しました。")+'</div>';
+    (room?"이 조건에 미학습 논점이 없습니다.":"오늘 신규 상한에 도달했습니다.")+'</div>';
   newList.slice(0,60).forEach(function(i){ host.appendChild(rowEl(i,"new")); });
 }
 
@@ -405,10 +457,10 @@ function drawPace(remaining){
   var need = toStop>0 ? Math.ceil(remaining/toStop) : remaining;
   var cls = remaining===0 ? "fine" : (need>st.cap ? "over" : "fine");
   document.getElementById("pace").innerHTML=
-    '<div><b>'+(toExam>0?toExam:0)+'</b><span>試験まで（日）</span></div>'+
-    '<div><b>'+(toStop>0?toStop:0)+'</b><span>新規の打切りまで</span></div>'+
-    '<div class="'+cls+'"><b>'+(remaining===0?"完了":need+"件")+
-    '</b><span>必要ペース／日</span></div>';
+    '<div><b>'+(toExam>0?toExam:0)+'</b><span>시험까지 (일)</span></div>'+
+    '<div><b>'+(toStop>0?toStop:0)+'</b><span>신규 마감까지</span></div>'+
+    '<div class="'+cls+'"><b>'+(remaining===0?"완료":need+"건")+
+    '</b><span>필요 페이스 / 일</span></div>';
 }
 
 function rowEl(i,kind,dueDay){
@@ -418,9 +470,9 @@ function rowEl(i,kind,dueDay){
   var m=st.m[i];
   var meta='<span class="tag '+"AB"[r[R_G]]+'">'+"AB"[r[R_G]]+'</span>'+
     '<span>'+SUBJ[r[R_S]]+'</span>';
-  if(kind==="rev") meta+='<span class="tag st">'+(m.k+1)+'回目 / '+OFF[m.k]+'日</span>';
-  if(overdue) meta+='<span class="tag od">'+(TODAY-dueDay)+'日 遅れ</span>';
-  if(r[R_F]) meta+='<span class="tag freq">過去問 '+r[R_F]+'回</span>';
+  if(kind==="rev") meta+='<span class="tag st">'+(m.k+1)+'회차 / '+OFF[m.k]+'일</span>';
+  if(overdue) meta+='<span class="tag od">'+(TODAY-dueDay)+'일 지연</span>';
+  if(r[R_F]) meta+='<span class="tag freq">과거문 '+r[R_F]+'회</span>';
   el.innerHTML='<div class="meta">'+meta+'</div>'+
     '<div class="h"></div><div class="loc"></div>'+
     '<div class="acts'+(kind==="new"?" one":"")+'"></div>';
@@ -429,11 +481,11 @@ function rowEl(i,kind,dueDay){
   el.querySelector(".loc").textContent=where(r);
   var acts=el.querySelector(".acts");
   if(kind==="new"){
-    acts.appendChild(btn("go","学習した（サイクル開始）",function(){
+    acts.appendChild(btn("go","학습 완료 (사이클 시작)",function(){
       studied(i); st.newcnt++; save(); drawToday(); }));
   }else{
-    acts.appendChild(btn("ok","覚えていた",function(){ pass(i); drawToday(); }));
-    acts.appendChild(btn("ng","忘れた（1日目に戻す）",function(){ fail(i); drawToday(); }));
+    acts.appendChild(btn("ok","기억함",function(){ pass(i); drawToday(); }));
+    acts.appendChild(btn("ng","잊음 (1일차로)",function(){ fail(i); drawToday(); }));
   }
   return el;
 }
@@ -444,16 +496,16 @@ function btn(cls,label,fn){
 
 /* ── 一覧 ─────────────────────────── */
 var aSubj=-1,aGrade=-1,aState=0,aChap=-1,aShow=60;
-var STATES=["すべて","未学習","学習中","遅れ","30日突破"];
+var STATES=["전체","미학습","학습중","지연","30일 완주"];
 function stateOf(i){
   var r=st.m[i]; if(!r) return 1;
   if(r.k>=5) return 4;
   return (r.t+OFF[r.k]<TODAY)?3:2;
 }
 function drawAll(){
-  chips($("a-subj"),["すべて"].concat(SUBJ),function(k){return aSubj===k-1;},
+  chips($("a-subj"),["전체"].concat(SUBJ),function(k){return aSubj===k-1;},
     function(k){aSubj=k-1;aChap=-1;aShow=60;drawAll();});
-  chips($("a-grade"),["すべて","A","B"],function(k){return aGrade===k-1;},
+  chips($("a-grade"),["전체","A","B"],function(k){return aGrade===k-1;},
     function(k){aGrade=k-1;aShow=60;drawAll();});
   chips($("a-state"),STATES,function(k){return aState===k;},
     function(k){aState=k;aShow=60;drawAll();});
@@ -469,39 +521,91 @@ function drawAll(){
   // 章チップは現在の絞り込み内のものだけ
   var chs=[]; var seen={};
   pool.forEach(function(i){ var c=R[i][R_C]; if(!seen[c]){seen[c]=1;chs.push(c);} });
-  chips($("a-chap"),["すべて"].concat(chs.map(function(c){return CH[c];})),
+  chips($("a-chap"),["전체"].concat(chs.map(function(c){return CH[c];})),
     function(k){return aChap===(k===0?-1:chs[k-1]);},
     function(k){aChap=(k===0?-1:chs[k-1]);aShow=60;drawAll();});
   if(aChap>=0) pool=pool.filter(function(i){return R[i][R_C]===aChap;});
 
-  $("n-all").textContent=pool.length.toLocaleString()+"件";
+  $("n-all").textContent=pool.length.toLocaleString()+"건";
   var host=$("l-all"); host.innerHTML="";
-  if(!pool.length){ host.innerHTML='<div class="empty">該当する論点がありません。</div>';
+  if(!pool.length){ host.innerHTML='<div class="empty">해당하는 논점이 없습니다.</div>';
     $("more").hidden=true; return; }
   pool.slice(0,aShow).forEach(function(i){
     var r=R[i], m=st.m[i], el=document.createElement("div");
     el.className="row";
     var d=due(i);
-    var tag = !m ? '<span class="tag st">未学習</span>'
-      : (m.k>=5 ? '<span class="tag freq">30日突破</span>'
-      : '<span class="tag st">'+(m.k+1)+'回目・'+
-        (d<TODAY?(TODAY-d)+"日 遅れ":(d===TODAY?"今日":"あと "+(d-TODAY)+"日"))+'</span>');
+    var tag = !m ? '<span class="tag st">미학습</span>'
+      : (m.k>=5 ? '<span class="tag freq">30일 완주</span>'
+      : '<span class="tag st">'+(m.k+1)+'회차 · '+
+        (d<TODAY?(TODAY-d)+"일 지연":(d===TODAY?"오늘":"앞으로 "+(d-TODAY)+"일"))+'</span>');
     el.innerHTML='<div class="meta"><span class="tag '+"AB"[r[R_G]]+'">'+"AB"[r[R_G]]+
       '</span><span>'+SUBJ[r[R_S]]+'</span>'+tag+
-      (r[R_F]?'<span class="tag freq">過去問 '+r[R_F]+'回</span>':'')+'</div>'+
+      (r[R_F]?'<span class="tag freq">과거문 '+r[R_F]+'회</span>':'')+'</div>'+
       '<div class="h"></div><div class="loc"></div><div class="acts one"></div>';
     el.querySelector(".h").textContent=r[R_H];
     el.querySelector(".loc").textContent=
       where(r);
     var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
     var acts=el.querySelector(".acts");
-    if(!m) acts.appendChild(btn("go","学習した（サイクル開始）",function(){
+    if(!m) acts.appendChild(btn("go","학습 완료 (사이클 시작)",function(){
       studied(i); st.newcnt++; save(); drawAll(); }));
-    else acts.appendChild(btn("ng","1日目に戻す",function(){ fail(i); drawAll(); }));
+    else acts.appendChild(btn("ng","1일차로 되돌리기",function(){ fail(i); drawAll(); }));
     host.appendChild(el);
   });
   $("more").hidden = pool.length<=aShow;
   $("more").onclick=function(){ aShow+=120; drawAll(); };
+}
+
+/* ── 進度：1日にどこからどこまで ───────
+   残りの未学習を科目比例で1日分ずつ切り出し、教材の巻・頁の範囲で示す。 */
+var rShow=14;
+function drawRange(){
+  var pool=[];
+  for(var i=0;i<R.length;i++) if(!st.m[i] && inFilter(i)) pool.push(i);
+  var host=$("r-list"); host.innerHTML="";
+  if(!pool.length){
+    $("r-head").textContent="이 조건에 남은 미학습 논점이 없습니다.";
+    $("r-more").hidden=true; return;
+  }
+  var cap=Math.max(1, st.cap);
+  var days=Math.ceil(pool.length/cap);
+  var end=new Date(); end.setDate(end.getDate()+days-1);
+  var stop=EXAM-30-TODAY;
+  $("r-head").textContent=
+    "남은 미학습 "+pool.length.toLocaleString()+"논점을 하루 "+cap+
+    "개씩 나눈 표입니다. "+days+"일 걸려서 "+(end.getMonth()+1)+"/"+end.getDate()+
+    "에 끝납니다."+(days>stop?" — 신규 마감일보다 "+(days-stop)+"일 늦습니다. 상한을 올리세요.":"")+
+    " 오늘 몫을 못 하면 그만큼 뒤로 밀립니다.";
+
+  var rest=pool.slice(), d=0;
+  var frag=document.createDocumentFragment();
+  while(rest.length && d<rShow){
+    var todays=allot(rest, cap);
+    var take={};
+    todays.forEach(function(i){ take[i]=1; });
+    rest=rest.filter(function(i){ return !take[i]; });
+
+    var dt=new Date(); dt.setDate(dt.getDate()+d);
+    var card=document.createElement("div"); card.className="row rday";
+    var html='<div class="rhead"><b>'+(dt.getMonth()+1)+"/"+dt.getDate()+
+      '</b><span>'+(d===0?"오늘":"D+"+d)+'</span><i>'+todays.length+'개</i></div>';
+    for(var s=0;s<4;s++){
+      var mine=todays.filter(function(i){ return R[i][R_S]===s; });
+      if(!mine.length) continue;
+      var a=R[mine[0]], b=R[mine[mine.length-1]];
+      var span=(a[R_V]||"")+" p."+a[R_P];
+      if(a[R_V]!==b[R_V]) span+=" ~ "+(b[R_V]||"")+" p."+b[R_P];
+      else if(a[R_P]!==b[R_P]) span+=" ~ p."+b[R_P];
+      html+='<div class="rrow"><span class="s">'+SUBJ[s]+'</span>'+
+        '<span class="p">'+span+'</span><span class="n">'+mine.length+'</span></div>';
+    }
+    card.innerHTML=html;
+    frag.appendChild(card);
+    d++;
+  }
+  host.appendChild(frag);
+  $("r-more").hidden = !rest.length;
+  $("r-more").onclick=function(){ rShow+=14; drawRange(); };
 }
 
 /* ── 予定 ─────────────────────────── */
@@ -520,14 +624,14 @@ function drawPlan(){
   cnt.forEach(function(v,d){
     var col=document.createElement("div");
     col.className="col"+(d===0?" today":"");
-    col.title="+"+d+"日 : "+v+"件";
+    col.title="+"+d+"일 : "+v+"건";
     col.innerHTML='<div class="bar" style="height:'+(v/max*100)+'%"></div>'+
       '<div class="lab">'+((d%5===0)?d:"")+'</div>';
     ch.appendChild(col);
   });
   var tot=cnt.reduce(function(a,b){return a+b;},0);
-  $("n-plan").textContent="30日で "+tot.toLocaleString()+"件"+
-    (late?"（遅れ "+late+"件を今日に加算）":"");
+  $("n-plan").textContent="30일간 "+tot.toLocaleString()+"건"+
+    (late?"（지연 "+late+"건을 오늘에 합산)":"");
   var host=$("sched"); host.innerHTML="";
   var base=new Date();
   cnt.forEach(function(v,d){
@@ -541,7 +645,7 @@ function drawPlan(){
     host.appendChild(row);
   });
   if(!host.children.length)
-    host.innerHTML='<div class="empty">まだ予定がありません。<br>「今日」タブで新規を学習すると積み上がります。</div>';
+    host.innerHTML='<div class="empty">아직 일정이 없습니다.<br>「오늘」 탭에서 신규를 학습하면 쌓입니다.</div>';
 }
 
 /* ── 共通UI ───────────────────────── */
@@ -561,7 +665,7 @@ function drawSettings(){
     if(p>=0){ if(st.subj.length===1) return; st.subj.splice(p,1); } else st.subj.push(k);
     save(); drawSettings(); drawToday();
   });
-  chips($("f-grade"),["すべて","Aのみ","Bのみ"],function(k){return st.grade===k-1;},
+  chips($("f-grade"),["전체","A만","B만"],function(k){return st.grade===k-1;},
     function(k){ st.grade=k-1; save(); drawSettings(); drawToday(); });
 }
 $("cap").value=st.cap;
@@ -570,16 +674,18 @@ $("cap").onchange=function(){
   st.cap=v; save(); drawToday();
 };
 $("reset").onclick=function(){
-  if(!confirm("この端末に保存された学習記録を消します。よろしいですか。")) return;
+  if(!confirm("이 기기에 저장된 학습 기록을 지웁니다. 계속할까요?")) return;
   st.m={}; st.newcnt=0; save(); drawToday();
 };
 
-var VIEWS=[["t-today","v-today",drawToday],["t-all","v-all",drawAll],["t-plan","v-plan",drawPlan]];
+var VIEWS=[["t-today","v-today",drawToday],["t-range","v-range",drawRange],
+           ["t-all","v-all",drawAll],["t-plan","v-plan",drawPlan]];
 VIEWS.forEach(function(v,i){
   $(v[0]).onclick=function(){
     VIEWS.forEach(function(w,j){
       $(w[0]).setAttribute("aria-selected",i===j?"true":"false");
       $(w[1]).hidden=(i!==j);
+      $(w[1]).style.display=(i===j?"flex":"none");
     });
     v[2](); window.scrollTo({top:0});
   };

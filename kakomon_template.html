@@ -1,4 +1,4 @@
-<title>短答式 過去問 肢別ドリル</title>
+<title>단답식 과거문 지문별 드릴</title>
 <style>
 :root{
   --ground:#FAFBFC; --card:#FFFFFF; --paper:#F1F4F7;
@@ -221,27 +221,27 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
 <div class="wrap">
   <header>
     <div class="title">
-      <h1>短答式 過去問 肢別ドリル</h1>
+      <h1>단답식 과거문 지문별 드릴</h1>
       <span class="sub" id="scope"></span>
       <a class="xlink"
-         href="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/checklist.html">論点チェックリスト →</a>
+         href="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/checklist.html">논점 체크리스트 →</a>
     </div>
     <div class="seg" role="tablist">
-      <button role="tab" id="t-drill" aria-selected="true">演習</button>
-      <button role="tab" id="t-browse" aria-selected="false">問題</button>
-      <button role="tab" id="t-freq" aria-selected="false">論点</button>
+      <button role="tab" id="t-drill" aria-selected="true">풀이</button>
+      <button role="tab" id="t-browse" aria-selected="false">문제</button>
+      <button role="tab" id="t-freq" aria-selected="false">논점</button>
     </div>
   </header>
 
-  <!-- ══ 演習 ══ -->
+  <!-- ══ 풀이 ══ -->
   <section id="v-drill">
     <div id="tbanner" hidden></div>
     <div class="ticks" id="ticks"></div>
     <div class="stats" style="margin-top:12px">
-      <div class="stat"><b id="s-left">0</b><span>のこり</span></div>
-      <div class="stat"><b id="s-done">0</b><span>今日</span></div>
-      <div class="stat"><b id="s-rate">–</b><span>正答率</span></div>
-      <div class="stat"><b id="s-wrong">0</b><span>要復習</span></div>
+      <div class="stat"><b id="s-left">0</b><span>남음</span></div>
+      <div class="stat"><b id="s-done">0</b><span>오늘</span></div>
+      <div class="stat"><b id="s-rate">–</b><span>정답률</span></div>
+      <div class="stat"><b id="s-wrong">0</b><span>복습필요</span></div>
     </div>
 
     <div class="card" id="card" style="margin-top:12px">
@@ -253,39 +253,39 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
 
     <details class="panel" id="filters" style="margin-top:12px">
       <summary style="cursor:pointer;font-size:.78rem;font-weight:700;color:var(--ai);
-        letter-spacing:.05em">絞り込みと進捗</summary>
+        letter-spacing:.05em">필터와 진도</summary>
       <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
         <div class="frow">
-          <div class="flabel">科目</div>
+          <div class="flabel">과목</div>
           <div class="chips" id="f-subj"></div>
         </div>
         <div class="frow">
-          <div class="flabel">出題回</div>
+          <div class="flabel">출제 회차</div>
           <div class="chips" id="f-range"></div>
         </div>
         <div class="frow">
-          <div class="flabel">出題順</div>
+          <div class="flabel">출제 순서</div>
           <div class="chips" id="f-mode"></div>
         </div>
         <div class="frow" id="sync"></div>
         <div class="frow">
-          <div class="flabel">進捗</div>
-          <button class="linkbtn" id="reset">この端末の解答履歴をすべて消す</button>
+          <div class="flabel">진도</div>
+          <button class="linkbtn" id="reset">이 기기의 풀이 기록 전부 삭제</button>
           <div class="hint" id="storenote"></div>
         </div>
       </div>
     </details>
   </section>
 
-  <!-- ══ 問題 ══ -->
+  <!-- ══ 문제 ══ -->
   <section id="v-browse" hidden>
     <div class="panel">
       <div class="frow">
-        <div class="flabel">出題回</div>
+        <div class="flabel">출제 회차</div>
         <select id="b-sess"></select>
       </div>
       <div class="frow">
-        <div class="flabel">科目</div>
+        <div class="flabel">과목</div>
         <div class="chips" id="b-subj"></div>
       </div>
     </div>
@@ -296,21 +296,21 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
   <section id="v-freq" hidden>
     <div class="panel">
       <div class="frow">
-        <div class="flabel">科目</div>
+        <div class="flabel">과목</div>
         <div class="chips" id="q-subj"></div>
       </div>
       <div class="frow">
-        <div class="flabel">重要度</div>
+        <div class="flabel">중요도</div>
         <div class="chips" id="q-grade"></div>
       </div>
       <div class="frow">
-        <div class="flabel">並び／絞り込み</div>
+        <div class="flabel">정렬 / 필터</div>
         <div class="chips" id="q-sort"></div>
       </div>
     </div>
     <p class="note" id="q-note"></p>
     <div class="list" id="q-list" style="margin-top:6px"></div>
-    <button class="chip" id="q-more" hidden style="width:100%;padding:12px">さらに表示</button>
+    <button class="chip" id="q-more" hidden style="width:100%;padding:12px">더 보기</button>
   </section>
 </div>
 
@@ -342,7 +342,7 @@ var saveT=null;
 function save(){ clearTimeout(saveT); saveT=setTimeout(function(){
   try{ localStorage.setItem(KEY, JSON.stringify(st)); }
   catch(e){ document.getElementById("storenote").textContent =
-    "保存できません（プライベートモードの可能性があります）。"; } },250); }
+    "저장할 수 없습니다 (시크릿 모드일 수 있습니다)."; } },250); }
 
 function today(){ var d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 if(st.day!==today()){ st.day=today(); st.done=0; st.hit=0; }
@@ -350,8 +350,8 @@ if(st.day!==today()){ st.day=today(); st.done=0; st.hit=0; }
 function ck(c){ return c[C_E]+"."+c[C_S]+"."+c[C_N]+"."+c[C_M]; }
 
 /* ── 出題キュー ───────────────────── */
-var RANGES = [["すべて",0],["直近10回",10],["直近5回",5],["直近3回",3]];
-var MODES  = [["新しい順",0],["古い順",1],["要復習のみ",2],["未解答のみ",3]];
+var RANGES = [["전체",0],["최근 10회",10],["최근 5회",5],["최근 3회",3]];
+var MODES  = [["최신순",0],["오래된순",1],["복습필요만",2],["미해답만",3]];
 var queue=[], qi=0, answered=false;
 var topicFilter=null;              // 論点IDで絞り込み中なら、その文字列
 
@@ -410,10 +410,10 @@ function drawBanner(){
   if(topicFilter==null){ b.hidden=true; b.innerHTML=""; return; }
   var t=TOPICS[topicFilter];
   b.hidden=false;
-  b.innerHTML='<div class="t"><b>論点でしぼり込み中</b><span class="hd"></span></div>'+
-    '<button type="button">解除</button>';
+  b.innerHTML='<div class="t"><b>논점으로 좁히는 중</b><span class="hd"></span></div>'+
+    '<button type="button">해제</button>';
   b.querySelector(".hd").textContent =
-    (t?t[4]:"（不明な論点）")+"　"+queue.length+"枚";
+    (t?t[4]:"(알 수 없는 논점)")+"　"+queue.length+"개";
   b.querySelector("button").onclick=function(){ setTopic(null); };
 }
 
@@ -441,8 +441,8 @@ function render(){
   $("s-done").textContent = st.done;
   $("s-rate").textContent = st.done ? Math.round(st.hit/st.done*100)+"%" : "–";
   $("s-wrong").textContent = wrong;
-  $("scope").textContent = D.meta.ncards.toLocaleString()+"肢 / "+
-    D.meta.nq.toLocaleString()+"問 / "+SESS[0]+"〜"+SESS[SESS.length-1];
+  $("scope").textContent = D.meta.ncards.toLocaleString()+"지문 / "+
+    D.meta.nq.toLocaleString()+"문제 / "+SESS[0]+"〜"+SESS[SESS.length-1];
 
   // 目盛り（現在地の前後）
   var t = $("ticks"); t.innerHTML="";
@@ -456,14 +456,14 @@ function render(){
 
   if(qi >= queue.length){
     $("stamp").textContent=""; $("theme").textContent="";
-    $("statement").innerHTML = '<div class="empty">この条件のカードは終わりました。<br>'+
-      '絞り込みを変えるか、「要復習のみ」で取りこぼしを回してください。</div>';
+    $("statement").innerHTML = '<div class="empty">이 조건의 카드를 다 풀었습니다.<br>'+
+      '필터를 바꾸거나 「복습필요만」으로 놓친 것을 도세요.</div>';
     $("reveal").hidden = true;
     judgeUI(false); return;
   }
   var c = CARDS[queue[qi]];
   $("stamp").innerHTML = '<span class="sess">'+SESS[c[C_E]]+'</span>'+
-    '<span>'+SUBJ[c[C_S]]+'</span><span>問 '+c[C_N]+'</span>'+
+    '<span>'+SUBJ[c[C_S]]+'</span><span>문제 '+c[C_N]+'</span>'+
     '<span class="mk">'+c[C_M]+'</span>';
   $("theme").textContent = c[C_TH];
   $("statement").textContent = c[C_TX];
@@ -477,13 +477,13 @@ function judgeUI(active){
   box.innerHTML="";
   if(!active){
     var b=document.createElement("button");
-    b.className="jb next"; b.textContent="条件を変える";
+    b.className="jb next"; b.textContent="조건 바꾸기";
     b.onclick=function(){ $("filters").open=true;
       $("filters").scrollIntoView({behavior:"smooth",block:"center"}); };
     box.appendChild(b); return;
   }
   if(!answered){
-    [["o","○","タダシイ"],["x","✕","アヤマリ"]].forEach(function(v){
+    [["o","○","맞다"],["x","✕","틀리다"]].forEach(function(v){
       var b=document.createElement("button");
       b.className="jb "+v[0];
       b.innerHTML = v[1]+'<small>'+v[2]+'</small>';
@@ -492,7 +492,7 @@ function judgeUI(active){
     });
   }else{
     var n=document.createElement("button");
-    n.className="jb next"; n.textContent="次の肢へ";
+    n.className="jb next"; n.textContent="다음 지문";
     n.onclick=function(){ qi++; render(); window.scrollTo({top:0,behavior:"smooth"}); };
     box.appendChild(n);
   }
@@ -512,18 +512,18 @@ function answer(said){
   var v = document.createElement("div");
   v.className = "verdict "+(ok?"hit":"miss");
   v.innerHTML = '<span class="glyph">'+(truth?"○":"✕")+'</span>'+
-    '<span><b>この肢は'+(truth?"正しい":"誤り")+'</b>'+
-    '<span class="note">　'+(ok?"判定は合っています":"判定を外しました")+'</span></span>';
+    '<span><b>이 지문은 '+(truth?"옳다":"틀리다")+'</b>'+
+    '<span class="note">　'+(ok?"판정 정답":"판정 오답")+'</span></span>';
   r.appendChild(v);
 
   var det = document.createElement("details");
   det.className="full";
   var sum = document.createElement("summary");
-  sum.textContent = "問題全体と正解を見る";
+  sum.textContent = "문제 전체와 정답 보기";
   det.appendChild(sum);
   var wrapEl = document.createElement("div");
   wrapEl.innerHTML = '<div class="qstem"></div><div class="shilist"></div>'+
-    '<div class="ansline">正解　<b>'+(q[4]==null?"—":q[4])+'</b>'+
+    '<div class="ansline">정답　<b>'+(q[4]==null?"—":q[4])+'</b>'+
     (q[7] && q[7][q[4]] ? '　（'+q[7][q[4]]+'）' : '')+'</div>';
   wrapEl.querySelector(".qstem").textContent = q[5];
   var sl = wrapEl.querySelector(".shilist");
@@ -543,14 +543,14 @@ function answer(said){
   if(tids.length){
     var tw=document.createElement("div");
     tw.className="topiclinks";
-    tw.innerHTML='<b>テキストの論点</b>';
+    tw.innerHTML='<b>교재 논점</b>';
     tids.forEach(function(id){
       var t=TOPICS[String(id)]; if(!t) return;
       var a=document.createElement("button");
       a.type="button"; a.className="tchip";
       a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>'+
         '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
-      a.querySelector(".hd").textContent=t[4]+"（肢 "+t[6]+"枚）";
+      a.querySelector(".hd").textContent=t[4]+" (지문 "+t[6]+"개)";
       a.querySelector(".loc").textContent=where(t);
       a.onclick=function(){ setTopic(String(id)); };
       tw.appendChild(a);
@@ -607,7 +607,7 @@ function drawFilters(){
     function(i){ return st.f.mode===i; }, function(i){ st.f.mode=i; save(); drawFilters(); build(); });
 }
 $("reset").onclick=function(){
-  if(!confirm("この端末に保存された解答履歴を消します。よろしいですか。")) return;
+  if(!confirm("이 기기에 저장된 풀이 기록을 지웁니다. 계속할까요?")) return;
   st.log={}; st.done=0; st.hit=0; save(); build();
 };
 
@@ -633,8 +633,8 @@ function drawBrowse(){
     var d=document.createElement("details"); d.className="item";
     var s=document.createElement("summary");
     s.style.cssText="cursor:pointer;list-style:none";
-    s.innerHTML='<span class="head"><b>問 '+q[2]+'</b><span>'+q[3]+'</span>'+
-      '<span>正解 '+(q[4]==null?"—":q[4])+'</span></span>';
+    s.innerHTML='<span class="head"><b>문제 '+q[2]+'</b><span>'+q[3]+'</span>'+
+      '<span>정답 '+(q[4]==null?"—":q[4])+'</span></span>';
     var body=document.createElement("div");
     body.innerHTML='<div class="qstem"></div><div class="shilist"></div>';
     body.querySelector(".qstem").textContent=q[5];
@@ -649,21 +649,21 @@ function drawBrowse(){
     });
     if(q[7] && Object.keys(q[7]).length){
       var cl=document.createElement("div"); cl.className="ansline";
-      cl.textContent = "選択肢　"+Object.keys(q[7]).sort().map(function(k){
+      cl.textContent = "선택지　"+Object.keys(q[7]).sort().map(function(k){
         return k+"."+q[7][k]; }).join("　");
       body.appendChild(cl);
     }
     // 教材のどこを見ればよいか
     if(q[8] && q[8].length){
       var tw=document.createElement("div"); tw.className="topiclinks";
-      tw.innerHTML='<b>テキストの該当箇所</b>';
+      tw.innerHTML='<b>교재의 해당 부분</b>';
       q[8].forEach(function(id){
         var t=TOPICS[String(id)]; if(!t) return;
         var a=document.createElement("button");
         a.type="button"; a.className="tchip";
         a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>'+
           '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
-        a.querySelector(".hd").textContent=t[4]+"（肢 "+t[6]+"枚）";
+        a.querySelector(".hd").textContent=t[4]+" (지문 "+t[6]+"개)";
         a.querySelector(".loc").textContent=where(t);
         a.onclick=function(){ setTopic(String(id)); showView(0); };
         tw.appendChild(a);
@@ -672,18 +672,18 @@ function drawBrowse(){
     }
     d.appendChild(s); d.appendChild(body); host.appendChild(d);
   });
-  if(!found) host.innerHTML='<div class="empty">この回のこの科目は収録がありません。</div>';
+  if(!found) host.innerHTML='<div class="empty">이 회차의 이 과목은 수록되어 있지 않습니다.</div>';
 }
 
 /* ── 論点ビュー ───────────────────── */
 var qSubj=-1, qGrade=-1, qSort=0, qShow=50;
-var SORTS=[["肢の多い順",0],["出題の多い順",1],["肢のある論点のみ",2]];
+var SORTS=[["지문 많은순",0],["출제 많은순",1],["지문 있는 논점만",2]];
 var TIDS=Object.keys(TOPICS);
 
 function drawFreq(){
-  chips($("q-subj"), ["すべて"].concat(SUBJ), function(i){ return qSubj===i-1; },
+  chips($("q-subj"), ["전체"].concat(SUBJ), function(i){ return qSubj===i-1; },
     function(i){ qSubj=i-1; qShow=50; drawFreq(); });
-  chips($("q-grade"), ["すべて","A","B"], function(i){ return qGrade===i-1; },
+  chips($("q-grade"), ["전체","A","B"], function(i){ return qGrade===i-1; },
     function(i){ qGrade=i-1; qShow=50; drawFreq(); });
   chips($("q-sort"), SORTS.map(function(s){return s[0];}),
     function(i){ return qSort===i; }, function(i){ qSort=i; qShow=50; drawFreq(); });
@@ -703,27 +703,27 @@ function drawFreq(){
 
   var host=$("q-list"); host.innerHTML="";
   if(!pool.length){
-    host.innerHTML='<div class="empty">該当する論点がありません。</div>';
+    host.innerHTML='<div class="empty">해당하는 논점이 없습니다.</div>';
     $("q-more").hidden=true; return;
   }
   var frag=document.createDocumentFragment();
   pool.slice(0,qShow).forEach(function(id){
     var t=TOPICS[id];
     var row=document.createElement("div"); row.className="freqrow";
-    row.innerHTML='<div class="freqn"><b>'+t[6]+'</b><span>肢</span></div>'+
+    row.innerHTML='<div class="freqn"><b>'+t[6]+'</b><span>지문</span></div>'+
       '<div class="freqmain"><div class="h"><span class="grade '+"AB"[t[1]]+'">'+
       "AB"[t[1]]+'</span><span class="hh"></span></div><div class="c"></div></div>';
     row.querySelector(".hh").textContent=t[4];
     row.querySelector(".c").textContent=
-      where(t)+"　｜　出題 "+t[5]+"回　"+
+      where(t)+"　｜　출제 "+t[5]+"회　"+
       t[7].map(function(e){return SESS[e];}).join(" ");
     var go=document.createElement("button");
     go.className="go"; go.type="button";
     if(t[6]){
-      go.textContent="この論点の肢 "+t[6]+"枚を解く";
+      go.textContent="이 논점의 지문 "+t[6]+"개 풀기";
       go.onclick=function(){ setTopic(id); showView(0); };
     }else{
-      go.textContent="O/X化できる肢がありません";
+      go.textContent="O/X로 만들 수 있는 지문이 없습니다";
       go.disabled=true;
     }
     row.appendChild(go);
@@ -732,11 +732,11 @@ function drawFreq(){
   host.appendChild(frag);
   $("q-more").hidden = pool.length<=qShow;
   $("q-more").onclick=function(){ qShow+=100; drawFreq(); };
-  $("q-note").textContent="教材の本文と肢の文面の似かたで機械的に寄せた概算です"+
-    "（肢のある論点 "+D.meta.ntopics_with_cards+" / 全 "+D.meta.ntopics_total+
-    "論点、論点のついた肢 "+D.meta.ncards_with_topic+" / "+D.meta.ncards+"枚）。"+
-    "取り違えは残りますし、0回＝未出題でもありません。"+
-    "　該当 "+pool.length.toLocaleString()+"件";
+  $("q-note").textContent="교재 본문과 지문의 문면이 얼마나 닮았는지로 기계적으로 붙인 어림치입니다"+
+    "(지문이 있는 논점 "+D.meta.ntopics_with_cards+" / 전체 "+D.meta.ntopics_total+
+    "논점, 논점이 붙은 지문 "+D.meta.ncards_with_topic+" / "+D.meta.ncards+"개). "+
+    "오배정이 남아 있고, 0회라고 해서 미출제인 것도 아닙니다."+
+    "　해당 "+pool.length.toLocaleString()+"건";
 }
 
 /* ── タブ ─────────────────────────── */

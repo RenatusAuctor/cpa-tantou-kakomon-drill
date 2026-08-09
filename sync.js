@@ -59,16 +59,16 @@ var SYNC = (function () {
 
   function importText(text) {
     var o = JSON.parse(text);
-    if (!o || !o.k) throw new Error("形式が違います");
+    if (!o || !o.k) throw new Error("형식이 다릅니다");
     var r = { cards: 0, topics: 0 };
     if (o.k[DRILL]) {
       var d = mergeDrill(read(DRILL), o.k[DRILL]);
-      if (!write(DRILL, d.obj)) throw new Error("保存できません");
+      if (!write(DRILL, d.obj)) throw new Error("저장할 수 없습니다");
       r.cards = d.n;
     }
     if (o.k[CHECK]) {
       var c = mergeCheck(read(CHECK), o.k[CHECK]);
-      if (!write(CHECK, c.obj)) throw new Error("保存できません");
+      if (!write(CHECK, c.obj)) throw new Error("저장할 수 없습니다");
       r.topics = c.n;
     }
     return r;
@@ -84,9 +84,9 @@ var SYNC = (function () {
   function saveFile(name, text, done) {
     if (window.claude && window.claude.downloads) {
       window.claude.downloads.save({ filename: name, data: text })
-        .then(function () { done("書き出しました：" + name); })
+        .then(function () { done("내보냈습니다: " + name); })
         .catch(function (e) {
-          done(e && e.code === "declined" ? "書き出しを取り消しました。"
+          done(e && e.code === "declined" ? "내보내기를 취소했습니다."
                                           : blob(name, text));
         });
       return;
@@ -98,17 +98,17 @@ var SYNC = (function () {
     var a = document.createElement("a");
     a.href = u; a.download = name; document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 1000);
-    return "書き出しました：" + name;
+    return "내보냈습니다: " + name;
   }
 
   function mount(hostId, onImported) {
     var el = document.getElementById(hostId);
     if (!el) return;
     el.innerHTML =
-      '<div class="flabel">ほかの端末に引き継ぐ</div>' +
+      '<div class="flabel">다른 기기로 이어하기</div>' +
       '<div class="synbtns">' +
-        '<button type="button" class="sbtn" data-a="ex">書き出す</button>' +
-        '<button type="button" class="sbtn" data-a="im">読み込む</button>' +
+        '<button type="button" class="sbtn" data-a="ex">내보내기</button>' +
+        '<button type="button" class="sbtn" data-a="im">가져오기</button>' +
       '</div>' +
       '<input type="file" accept="application/json,.json" hidden>' +
       '<div class="hint" data-s></div>';
@@ -118,9 +118,9 @@ var SYNC = (function () {
     function status(extra) {
       var c = counts();
       msg.textContent = (extra ? extra + "　" : "") +
-        "この端末には 肢 " + c.cards.toLocaleString() + "件・論点 " +
-        c.topics.toLocaleString() + "件 の記録があります。" +
-        "読み込みは上書きではなく、項目ごとに新しい方を残します。";
+        "이 기기에는 지문 " + c.cards.toLocaleString() + "건 · 논점 " +
+        c.topics.toLocaleString() + "건의 기록이 있습니다." +
+        "가져오기는 덮어쓰기가 아니라, 항목마다 더 최근 것을 남깁니다.";
     }
     status();
 
@@ -135,11 +135,11 @@ var SYNC = (function () {
       rd.onload = function () {
         try {
           var r = importText(String(rd.result));
-          status("取り込みました（肢 " + r.cards + "件・論点 " + r.topics + "件を更新）。");
+          status("가져왔습니다 (지문 " + r.cards + "건 · 논점 " + r.topics + "건 갱신).");
           if (onImported) onImported();
         } catch (e) {
-          msg.textContent = "読み込めませんでした：" + e.message +
-            "　書き出したファイルをそのまま選んでください。";
+          msg.textContent = "가져오지 못했습니다: " + e.message +
+            "　내보낸 파일을 그대로 선택해 주세요.";
         }
         file.value = "";
       };

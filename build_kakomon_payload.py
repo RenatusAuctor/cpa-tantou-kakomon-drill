@@ -5,7 +5,9 @@ import json, re, collections
 qs = json.load(open("kakomon_questions.json", encoding="utf-8"))
 tp = json.load(open("kakomon_topic_freq.json", encoding="utf-8"))
 
-SUBJ = ["企業法", "監査論", "管理会計論", "財務会計論"]
+SUBJ = ["企業法", "監査論", "管理会計論", "財務会計論"]      # データ側のキー
+SUBJ_KO = ["기업법", "감사론", "관리회계론", "재무회계론"]     # 画面表示
+TYPE_KO = {"組合せ": "조합", "単一選択": "단일선택", "個数": "개수", "その他": "기타"}
 
 
 def sess_key(s):
@@ -34,8 +36,8 @@ for q in qs:
     th = theme(q["stem"])
     shi = [[k, v] for k, v in q["shi"].items()]
     tids = sorted(set(q.get("topics", [])))       # ab_data.json 上の添字＝論点ID
-    questions.append([s, e, q["no"], q["type"], q["answer"], q["stem"], shi,
-                      q["choices"], tids])
+    questions.append([s, e, q["no"], TYPE_KO.get(q["type"], q["type"]),
+                      q["answer"], q["stem"], shi, q["choices"], tids])
     qi = len(questions) - 1
     if q["truth"]:
         sht = q.get("shi_topics", {})
@@ -62,9 +64,9 @@ for i, t in enumerate(tp):
                       t["chapter"], t["section"], t["heading"], t["freq"],
                       ncards.get(i, 0),
                       [ei[s] for s in t["sessions"] if s in ei],
-                      t.get("vol", "").replace("권", "巻"), t.get("page", 0)]
+                      t.get("vol", ""), t.get("page", 0)]
 
-payload = {"subjects": SUBJ, "sessions": SESS, "cards": cards,
+payload = {"subjects": SUBJ_KO, "sessions": SESS, "cards": cards,
            "questions": questions, "topics": topics,
            "meta": {"nq": len(questions), "ncards": len(cards),
                     "ntopics_total": len(tp), "ntopics_hit": len(topics),
