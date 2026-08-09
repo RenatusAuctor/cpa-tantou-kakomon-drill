@@ -209,6 +209,12 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
   outline-offset:2px}
 .linkbtn{appearance:none;background:none;border:0;color:var(--ai);font-family:inherit;
   font-size:.72rem;cursor:pointer;padding:4px 0;text-decoration:underline;letter-spacing:.03em}
+/* 端末間の引き継ぎ */
+.synbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbtn{appearance:none;font-family:inherit;font-size:.78rem;font-weight:700;padding:10px 0;
+  border-radius:7px;border:1.5px solid var(--ai);background:transparent;color:var(--ai);
+  cursor:pointer;letter-spacing:.03em}
+.sbtn:active{background:var(--ai);color:#fff}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -261,6 +267,7 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
           <div class="flabel">出題順</div>
           <div class="chips" id="f-mode"></div>
         </div>
+        <div class="frow" id="sync"></div>
         <div class="frow">
           <div class="flabel">進捗</div>
           <button class="linkbtn" id="reset">この端末の解答履歴をすべて消す</button>
@@ -312,6 +319,9 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
 </div>
 
 <script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+/*__SYNC__*/
+</script>
 <script>
 (function(){
 "use strict";
@@ -750,6 +760,8 @@ function fromHash(){
   return false;
 }
 window.addEventListener("hashchange", function(){ if(!fromHash()) setTopic(null); });
+
+SYNC.mount("sync", function(){ st = load(); build(); });
 
 drawFilters();
 if(!fromHash()) build();
