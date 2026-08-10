@@ -133,6 +133,16 @@ header{padding:18px 2px 0;display:flex;flex-direction:column;gap:11px}
 .tag.od{background:var(--shu-soft);color:var(--shu)}
 .row .h{font-family:var(--mincho);font-size:.98rem;line-height:1.65;overflow-wrap:anywhere}
 .row .loc{font-size:.66rem;color:var(--ink3);line-height:1.5;overflow-wrap:anywhere}
+/* 교재 본문 */
+details.body summary{cursor:pointer;font-size:.72rem;font-weight:700;color:var(--ai);
+  list-style:none;letter-spacing:.03em;padding:2px 0}
+details.body summary::-webkit-details-marker{display:none}
+details.body summary::before{content:"▸ "}
+details.body[open] summary::before{content:"▾ "}
+details.body .bt{font-family:var(--mincho);font-size:.88rem;line-height:1.9;
+  margin-top:7px;padding:10px 12px;border-radius:7px;background:var(--paper);
+  border-left:3px solid var(--rule);text-align:justify;overflow-wrap:anywhere;
+  white-space:pre-wrap}
 .drill{display:block;text-align:center;text-decoration:none;font-size:.76rem;font-weight:700;
   color:var(--ai);border:1px dashed var(--ai);border-radius:7px;padding:8px 0;
   letter-spacing:.03em}
@@ -302,7 +312,18 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 "use strict";
 var D = JSON.parse(document.getElementById("payload").textContent);
 var SUBJ=D.subjects, CH=D.chapters, SE=D.sections, R=D.rows;
-var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7,R_ID=8,R_N=9;
+var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7,R_ID=8,R_N=9,R_B=10;
+
+/* 教材の本文。見出しだけ見て思い出す → ここを開いて答え合わせ、という順で使う。 */
+function bodyEl(r){
+  var t=r[R_B];
+  if(!t) return null;
+  var d=document.createElement("details");
+  d.className="body";
+  d.innerHTML='<summary>교재 본문 보기</summary><div class="bt"></div>';
+  d.querySelector(".bt").textContent=t;
+  return d;
+}
 var DRILL="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/";
 
 /* 教材のどこか：巻・頁と、章／節 */
@@ -483,6 +504,7 @@ function rowEl(i,kind,dueDay){
   el.innerHTML='<div class="meta">'+meta+'</div>'+
     '<div class="h"></div><div class="loc"></div>'+
     '<div class="acts'+(kind==="new"?" one":"")+'"></div>';
+  var bd0=bodyEl(r); if(bd0) el.insertBefore(bd0, el.querySelector(".acts"));
   var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
   el.querySelector(".h").textContent=r[R_H];
   el.querySelector(".loc").textContent=where(r);
@@ -552,7 +574,8 @@ function drawAll(){
     el.querySelector(".h").textContent=r[R_H];
     el.querySelector(".loc").textContent=
       where(r);
-    var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
+    var bd0=bodyEl(r); if(bd0) el.insertBefore(bd0, el.querySelector(".acts"));
+  var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
     var acts=el.querySelector(".acts");
     if(!m) acts.appendChild(btn("go","학습 완료 (사이클 시작)",function(){
       studied(i); st.newcnt++; save(); drawAll(); }));

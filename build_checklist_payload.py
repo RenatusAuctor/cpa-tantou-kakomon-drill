@@ -3,6 +3,11 @@
 import json, collections
 
 src = json.load(open("ab_data.json", encoding="utf-8"))
+# 教材本文（extract_topic_bodies.py が作る）。無ければ空で通す。
+try:
+    bodies = json.load(open("topic_bodies.json", encoding="utf-8"))
+except FileNotFoundError:
+    bodies = []
 
 # 論点ID = ab_data.json 上の添字。ドリル側と同じIDなので #topic=<id> で飛べる。
 freq, ncards = {}, {}
@@ -42,7 +47,7 @@ for i, t in enumerate(src):
     c = idx(t["chapter"], chaps, ci)
     x = idx(t["section"], secs, xi)
     rows.append([s, g, c, x, t["heading"], t.get("vol", ""), t.get("page", 0),
-                 freq.get(i, 0), i, ncards.get(i, 0)])
+                 freq.get(i, 0), i, ncards.get(i, 0), bodies[i] if i < len(bodies) else ""])
 
 # 教材の並び（科目 → 巻 → 頁）を保つ
 rows.sort(key=lambda r: (r[0], r[5], r[6]))

@@ -175,6 +175,19 @@ details.full[open] summary::before{content:"▾ ";}
 .topiclinks{border-top:1px solid var(--rule2);padding-top:11px;display:flex;
   flex-direction:column;gap:7px}
 .topiclinks b{font-size:.66rem;letter-spacing:.1em;color:var(--ink3);font-weight:700}
+/* 교재 본문 */
+.tblock{display:flex;flex-direction:column;gap:6px}
+details.body{width:100%}
+details.body summary{cursor:pointer;font-size:.72rem;font-weight:700;color:var(--ai);
+  list-style:none;letter-spacing:.03em;padding:2px 0 2px 2px}
+details.body summary::-webkit-details-marker{display:none}
+details.body summary::before{content:"▸ "}
+details.body[open] summary::before{content:"▾ "}
+details.body .bt{font-family:var(--mincho);font-size:.88rem;line-height:1.9;
+  margin-top:7px;padding:10px 12px;border-radius:7px;background:var(--paper);
+  border-left:3px solid var(--rule);text-align:justify;overflow-wrap:anywhere;
+  white-space:pre-wrap}
+.freqrow details.body{flex:1 0 100%}
 .tchip{appearance:none;display:flex;align-items:flex-start;gap:8px;text-align:left;
   border:1px solid var(--rule);background:var(--paper);color:var(--ink2);
   font-family:inherit;font-size:.78rem;line-height:1.5;padding:9px 11px;border-radius:7px;
@@ -359,7 +372,35 @@ var topicFilter=null;              // 絞り込み中の論点ID配列（1件で
 function cardTopics(c){ return c[C_T] || []; }
 
 /* 教材のどこか：科目・巻・頁と、章／節 */
-var T_SUBJ=0,T_G=1,T_CH=2,T_SE=3,T_HD=4,T_FQ=5,T_NC=6,T_SS=7,T_VOL=8,T_PG=9;
+var T_SUBJ=0,T_G=1,T_CH=2,T_SE=3,T_HD=4,T_FQ=5,T_NC=6,T_SS=7,T_VOL=8,T_PG=9,T_B=10;
+
+/* 論点ひとつぶん：絞り込みボタン＋教材本文。
+   details をボタンの中に入れられないので、まとめる箱を1つ作る。 */
+function topicBlock(id, after){
+  var t=TOPICS[String(id)];
+  if(!t) return null;
+  var box=document.createElement("div"); box.className="tblock";
+  var a=document.createElement("button");
+  a.type="button"; a.className="tchip";
+  a.innerHTML='<span class="grade '+"AB"[t[T_G]]+'">'+"AB"[t[T_G]]+'</span>'+
+    '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
+  a.querySelector(".hd").textContent=t[T_HD]+" (지문 "+t[T_NC]+"개)";
+  a.querySelector(".loc").textContent=where(t);
+  a.onclick=function(){ setTopic(String(id)); if(after) after(); };
+  box.appendChild(a);
+  var b=bodyEl(t); if(b) box.appendChild(b);
+  return box;
+}
+
+/* 教材の本文。肢の正誤の根拠がそのまま書いてある。 */
+function bodyEl(t){
+  if(!t || !t[T_B]) return null;
+  var d=document.createElement("details");
+  d.className="body";
+  d.innerHTML='<summary>교재 본문 보기</summary><div class="bt"></div>';
+  d.querySelector(".bt").textContent=t[T_B];
+  return d;
+}
 function where(t){
   var a=[SUBJ[t[T_SUBJ]]];
   if(t[T_VOL]) a.push(t[T_VOL]);
@@ -562,15 +603,8 @@ function answer(said){
     tw.className="topiclinks";
     tw.innerHTML='<b>교재 논점</b>';
     tids.forEach(function(id){
-      var t=TOPICS[String(id)]; if(!t) return;
-      var a=document.createElement("button");
-      a.type="button"; a.className="tchip";
-      a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>'+
-        '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
-      a.querySelector(".hd").textContent=t[4]+" (지문 "+t[6]+"개)";
-      a.querySelector(".loc").textContent=where(t);
-      a.onclick=function(){ setTopic(String(id)); };
-      tw.appendChild(a);
+      var box=topicBlock(id);
+      if(box) tw.appendChild(box);
     });
     if(tw.children.length>1) r.appendChild(tw);
   }
@@ -675,15 +709,8 @@ function drawBrowse(){
       var tw=document.createElement("div"); tw.className="topiclinks";
       tw.innerHTML='<b>교재의 해당 부분</b>';
       q[8].forEach(function(id){
-        var t=TOPICS[String(id)]; if(!t) return;
-        var a=document.createElement("button");
-        a.type="button"; a.className="tchip";
-        a.innerHTML='<span class="grade '+"AB"[t[1]]+'">'+"AB"[t[1]]+'</span>'+
-          '<span class="tb"><span class="hd"></span><span class="loc"></span></span>';
-        a.querySelector(".hd").textContent=t[4]+" (지문 "+t[6]+"개)";
-        a.querySelector(".loc").textContent=where(t);
-        a.onclick=function(){ setTopic(String(id)); showView(0); };
-        tw.appendChild(a);
+        var box=topicBlock(id, function(){ showView(0); });
+        if(box) tw.appendChild(box);
       });
       if(tw.children.length>1) body.appendChild(tw);
     }
@@ -743,6 +770,7 @@ function drawFreq(){
       go.textContent="O/X로 만들 수 있는 지문이 없습니다";
       go.disabled=true;
     }
+    var bd=bodyEl(t); if(bd) row.appendChild(bd);
     row.appendChild(go);
     frag.appendChild(row);
   });

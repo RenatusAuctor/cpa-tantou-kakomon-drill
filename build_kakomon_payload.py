@@ -4,6 +4,10 @@ import json, re, collections
 
 qs = json.load(open("kakomon_questions.json", encoding="utf-8"))
 tp = json.load(open("kakomon_topic_freq.json", encoding="utf-8"))
+try:
+    bodies = json.load(open("topic_bodies.json", encoding="utf-8"))
+except FileNotFoundError:
+    bodies = []
 
 SUBJ = ["企業法", "監査論", "管理会計論", "財務会計論"]      # データ側のキー
 SUBJ_KO = ["기업법", "감사론", "관리회계론", "재무회계론"]     # 画面表示
@@ -64,7 +68,8 @@ for i, t in enumerate(tp):
                       t["chapter"], t["section"], t["heading"], t["freq"],
                       ncards.get(i, 0),
                       [ei[s] for s in t["sessions"] if s in ei],
-                      t.get("vol", ""), t.get("page", 0)]
+                      t.get("vol", ""), t.get("page", 0),
+                      bodies[i] if i < len(bodies) else ""]
 
 payload = {"subjects": SUBJ_KO, "sessions": SESS, "cards": cards,
            "questions": questions, "topics": topics,
