@@ -36,7 +36,76 @@ def grade_of(m):
     g = m.group(1) or m.group(2) or ""
     return g.translate(FULL2HALF)
 
-MAXBODY = 1500          # 次のマーカーが遠すぎるときの打ち切り
+MAXBODY = 5000          # 次のマーカーが遠すぎるときの打ち切り
+LOOKAHEAD = 6           # マーカーが見つかるまで先の頁を何枚たどるか
+
+# 本文に紛れ込む柱（ページ上部の章・節見出し）・頁番号・製版コード
+NOISE = [
+    re.compile(r"^\s*第\s*[０-９0-9]+\s*[章節][^\n]{0,30}$"),
+    re.compile(r"^\s*[０-９0-9]{1,4}\s*$"),
+    re.compile(r"^\s*[ＭM]\s*\d\s*[―ー\-]\s*\d+\s*$"),
+    re.compile(r"^\s*[A-Z]{2,6}\d*\.indd\b.*$"),
+    re.compile(r"^\s*\d{6}\s*$"),
+]
+
+
+def strip_noise(text):
+    out = []
+    for ln in text.split("\n"):
+        if any(p.match(ln) for p in NOISE):
+            continue
+        out.append(ln)
+    return "\n".join(out)
+
+
+# 末尾に残りやすい「次の見出し」のかたち：第○章／１．／（１）／①
+HEAD_TAIL = re.compile(
+    r"\s(?:第\s*[０-９0-9]+\s*[章節]|[０-９0-9]{1,2}\s*[．.]|"
+    r"[（(]\s*[０-９0-9ⅰ-ⅹⅰ-ⅹa-zａ-ｚ]{1,3}\s*[）)]|[①-⑳])"
+    r"\s*[^\s。]{0,24}\s*$")
+# 図表の通し番号（－ ①－2－3 － ( 10 ) のたぐい）
+FIGNO = re.compile(r"－\s*[①-⑳]?[－\-\d\s]{1,12}－|[（(]\s*\d{1,3}\s*[）)]\s*$")
+
+
+def drop_heading_by_name(b, heading):
+    """次の論点の見出しが末尾にそのまま来ている場合に削る。"""
+    if not heading:
+        return b
+    want = re.sub(r"\s+", "", heading)
+    if not want:
+        return b
+    tail = re.sub(r"\s+", "", b[-(len(want) + 12):])
+    if not tail.endswith(want):
+        return b
+    cut, seen = len(b), 0
+    while cut > 0 and seen < len(want):
+        cut -= 1
+        if not b[cut].isspace():
+            seen += 1
+    return b[:cut].rstrip()
+
+
+# 図がテキスト化されたときの残骸。数字を壊さないよう、記号の並びだけを対象にする
+# （(.)\1{2,} のような一般化は「10000」を「10」にしてしまうので使わない）
+SYMRUN = re.compile(r"(?:\s[‘’“”~＿｜|［］\[\]{}／＼^]{1,3}){2,}")
+
+
+def strip_figure_junk(b):
+    return re.sub(r"\s{2,}", " ", SYMRUN.sub(" ", b))
+
+
+def trim_tail(body, next_heading):
+    """末尾に紛れ込む見出し・図表番号を落とす。"""
+    b = strip_figure_junk(FIGNO.sub(" ", body)).rstrip()
+    b = drop_heading_by_name(b, next_heading)
+    # 見出しの形をした断片が続くかぎり削る（「２．法人性 （１） 法人格の制度」など）
+    for _ in range(4):
+        nb = HEAD_TAIL.sub("", b).rstrip()
+        if nb == b:
+            break
+        b = nb
+    b = re.sub(r"\s{2,}", " ", b)
+    return b.strip()
 
 
 def pages_of(path):
@@ -67,7 +136,6 @@ def main():
         ok = miss = 0
         for pno, idxs in want.items():
             page = pages[pno - 1] if 0 < pno <= len(pages) else ""
-            nxt = pages[pno] if pno < len(pages) else ""
             hits = list(MARKER.finditer(page))
             ab_hits = [k for k, m in enumerate(hits) if grade_of(m) in ("A", "B")]
             if len(ab_hits) != len(idxs):
@@ -75,12 +143,30 @@ def main():
                 continue
             for k, i in zip(ab_hits, idxs):
                 start = hits[k].end()
-                end = hits[k + 1].start() if k + 1 < len(hits) else len(page)
-                body = page[start:end]
-                if k + 1 == len(hits):            # 頁をまたぐ分を少し足す
-                    m = MARKER.search(nxt)
-                    body += "\n" + (nxt[:m.start()] if m else nxt[:MAXBODY])
-                bodies[i] = re.sub(r"\s+", " ", body)[:MAXBODY].strip()
+                if k + 1 < len(hits):                    # 同じ頁に次のマーカーがある
+                    body = page[start:hits[k + 1].start()]
+                else:
+                    # 次のマーカーが出るまで頁をまたいで拾う（数頁続く論点がある）
+                    body = page[start:]
+                    for j in range(pno, min(pno + LOOKAHEAD, len(pages))):
+                        nxt = pages[j]
+                        m = MARKER.search(nxt)
+                        if m:
+                            body += "\n" + nxt[:m.start()]
+                            break
+                        body += "\n" + nxt
+                        if len(body) > MAXBODY:
+                            break
+                body = strip_noise(body)
+                body = re.sub(r"[ \t　]+", " ", body)
+                body = re.sub(r"\n{2,}", "\n", body).replace("\n", " ")
+                body = re.sub(r"\s{2,}", " ", body)
+                if len(body) > MAXBODY:                  # 切るなら文の切れ目で
+                    cut = body.rfind("。", 0, MAXBODY)
+                    body = body[:cut + 1] if cut > MAXBODY * 0.5 else body[:MAXBODY]
+                nh = ab[idxs[idxs.index(i) + 1]]["heading"] \
+                    if idxs.index(i) + 1 < len(idxs) else ""
+                bodies[i] = trim_tail(body, nh)
                 ok += 1
         stats.append((key, len(items), ok, miss))
         print(f"  {key[0]:14s} {key[1]}  {ok:5d}/{len(items):5d} 本文取得"
