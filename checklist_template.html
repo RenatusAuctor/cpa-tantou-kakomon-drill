@@ -157,6 +157,13 @@ details.body.noimg .bimg{display:none}
 @media (prefers-color-scheme:dark){ .bimg img{filter:invert(1) hue-rotate(180deg)} }
 :root[data-theme="dark"] .bimg img{filter:invert(1) hue-rotate(180deg)}
 :root[data-theme="light"] .bimg img{filter:none}
+/* 복습 회차 구분 */
+.stagehead{display:flex;align-items:baseline;gap:8px;padding:10px 2px 2px;
+  font-variant-numeric:tabular-nums}
+.stagehead b{font-size:.82rem;font-weight:700}
+.stagehead span{font-size:.68rem;color:var(--ink3)}
+.stagehead i{margin-left:auto;font-style:normal;font-size:.7rem;color:var(--ink3)}
+.stagedrill{margin-bottom:2px}
 .drill{display:block;text-align:center;text-decoration:none;font-size:.76rem;font-weight:700;
   color:var(--ai);border:1px dashed var(--ai);border-radius:7px;padding:8px 0;
   letter-spacing:.03em}
@@ -362,12 +369,26 @@ function where(r){
   return a.join(" ")+(b.length?"　"+b.join(" › "):"");
 }
 
+/* 復習の回ごとに、過去問をどこまで解き直すか。
+   1・3日目は当時の範囲を丸ごと、7・14日目はまちがえた肢だけ、
+   30日目は4回以上まちがえた肢だけ。 */
+var STAGE=[
+  {label:"1일차",  miss:0, scope:"그날 범위 전부"},
+  {label:"3일차",  miss:0, scope:"그날 범위 전부"},
+  {label:"7일차",  miss:1, scope:"틀렸던 것만"},
+  {label:"14일차", miss:1, scope:"틀렸던 것만"},
+  {label:"30일차", miss:4, scope:"4회 이상 틀린 것"}
+];
+
 /* この論点の過去問肢へ飛ぶボタン（ドリル側と論点IDを共有している） */
-function drillLink(r){
+function drillLink(r, miss){
   if(!r[R_N]) return null;
   var a=document.createElement("a");
-  a.className="drill"; a.href=DRILL+"#topic="+r[R_ID];
-  a.textContent="이 논점 과거문 지문 "+r[R_N]+"개 풀기 →";
+  a.className="drill";
+  a.href=DRILL+"#topic="+r[R_ID]+(miss?"&m="+miss:"");
+  a.textContent = miss===1 ? "이 논점에서 틀렸던 지문 풀기 →"
+    : miss>1 ? "이 논점에서 "+miss+"회 이상 틀린 지문 풀기 →"
+    : "이 논점 과거문 지문 "+r[R_N]+"개 풀기 →";
   return a;
 }
 
@@ -490,8 +511,31 @@ function drawToday(){
 
   var host=$("l-rev"); host.innerHTML="";
   if(!c.rev.length) host.innerHTML='<div class="empty">오늘 돌아올 논점이 없습니다.</div>';
-  c.rev.slice(0,120).forEach(function(p){ host.appendChild(rowEl(p[0],"rev",p[1])); });
-  if(c.rev.length>120){
+  // 回ごとに束ねる。束の頭に「その回ぶんをまとめて解く」導線を置く。
+  var shown=0;
+  STAGE.forEach(function(sg, k){
+    var mine=c.rev.filter(function(p){ return (st.m[p[0]]||{}).k===k; });
+    if(!mine.length) return;
+    var head=document.createElement("div"); head.className="stagehead";
+    head.innerHTML='<b>'+sg.label+' 복습</b><span>'+sg.scope+'</span>'+
+      '<i>'+mine.length+'논점</i>';
+    host.appendChild(head);
+    var ids=mine.map(function(p){ return R[p[0]]; })
+                .filter(function(r){ return r[R_N]>0; })
+                .map(function(r){ return r[R_ID]; });
+    if(ids.length){
+      var a=document.createElement("a");
+      a.className="drill stagedrill";
+      a.href=DRILL+"#topics="+ids.join(",")+(sg.miss?"&m="+sg.miss:"");
+      a.textContent=sg.label+" 분량 과거문 "+
+        (sg.miss?"("+sg.scope+") ":"")+"모아서 풀기 →";
+      host.appendChild(a);
+    }
+    mine.forEach(function(p){
+      if(shown++ < 120) host.appendChild(rowEl(p[0],"rev",p[1]));
+    });
+  });
+  if(shown>120){
     var m=document.createElement("p"); m.className="note";
     m.textContent="120건까지만 표시합니다. 처리하면 다음이 나옵니다.";
     host.appendChild(m);
@@ -530,7 +574,9 @@ function rowEl(i,kind,dueDay){
     '<div class="h"></div><div class="loc"></div>'+
     '<div class="acts'+(kind==="new"?" one":"")+'"></div>';
   var bd0=bodyEl(r); if(bd0) el.insertBefore(bd0, el.querySelector(".acts"));
-  var dl=drillLink(r); if(dl) el.insertBefore(dl, el.querySelector(".acts"));
+  var sg = (kind==="rev" && m) ? STAGE[Math.min(m.k, STAGE.length-1)] : null;
+  var dl=drillLink(r, sg?sg.miss:0);
+  if(dl) el.insertBefore(dl, el.querySelector(".acts"));
   el.querySelector(".h").textContent=r[R_H];
   el.querySelector(".loc").textContent=where(r);
   var acts=el.querySelector(".acts");

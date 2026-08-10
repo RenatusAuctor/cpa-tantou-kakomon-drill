@@ -293,6 +293,10 @@ button:focus-visible,summary:focus-visible,select:focus-visible{outline:2px soli
           <div class="flabel">출제 순서</div>
           <div class="chips" id="f-mode"></div>
         </div>
+        <div class="frow">
+          <div class="flabel">오답 횟수</div>
+          <div class="chips" id="f-miss"></div>
+        </div>
         <div class="frow" id="sync"></div>
         <div class="frow">
           <div class="flabel">진도</div>
@@ -375,11 +379,19 @@ if(st.day!==today()){ st.day=today(); st.done=0; st.hit=0; }
 
 function ck(c){ return c[C_E]+"."+c[C_S]+"."+c[C_N]+"."+c[C_M]; }
 
+/* まちがえた回数。n を持たない古い記録は、最後の正誤から 1 か 0 とみなす。 */
+function missOf(rec){
+  if(!rec) return 0;
+  return rec.n != null ? rec.n : (rec.w ? 1 : 0);
+}
+
 /* ── 出題キュー ───────────────────── */
 var RANGES = [["전체",0],["최근 10회",10],["최근 5회",5],["최근 3회",3]];
 var MODES  = [["최신순",0],["오래된순",1],["복습필요만",2],["미해답만",3]];
 var queue=[], qi=0, answered=false;
 var topicFilter=null;              // 絞り込み中の論点ID配列（1件でも配列）
+var missFilter=0;                  // 0=全部, 1=まちがえた肢, 4=4回以上まちがえた肢
+var MISSES=[["전체",0],["틀렸던 것만",1],["4회 이상 틀린 것",4]];
 
 /* 論点は肢ごとに持たせている（同じ問題でも肢によって論点が違う） */
 function cardTopics(c){ return c[C_T] || []; }
@@ -458,6 +470,7 @@ function build(){
       if(sel.indexOf(c[C_S])<0) continue;
     }
     var rec = st.log[ck(c)];
+    if(missFilter && missOf(rec) < missFilter) continue;
     if(mode===2 && !(rec && rec.w)) continue;
     if(mode===3 && rec) continue;
     out.push(i);
@@ -489,16 +502,19 @@ function drawBanner(){
   }else{
     label="논점 "+topicFilter.length+"개";
   }
+  if(missFilter===1) label+="　·　틀렸던 것만";
+  else if(missFilter>1) label+="　·　"+missFilter+"회 이상 틀린 것";
   b.querySelector(".hd").textContent = label+"　지문 "+queue.length+"개";
   b.querySelector("button").onclick=function(){ setTopic(null); };
 }
 
 /* 単一IDでも配列でも受ける。進度表からは1日ぶんの論点がまとめて来る。 */
-function setTopic(sel){
+function setTopic(sel, miss){
+  missFilter = miss ? parseInt(miss,10)||0 : 0;
   if(sel==null || (sel.length===0)){
-    topicFilter=null;
+    topicFilter=null; missFilter=0;
     if(location.hash) history.replaceState(null,"",location.pathname+location.search);
-    build(); return;
+    drawFilters(); build(); return;
   }
   var arr = (typeof sel==="string"||typeof sel==="number") ? [sel] : sel;
   arr = arr.map(function(x){ return parseInt(x,10); })
@@ -511,7 +527,8 @@ function setTopic(sel){
   });
   if(st.f.mode===2 || st.f.mode===3) st.f.mode=0;   // 論点内は全部まわす
   save(); drawFilters();
-  var h = arr.length===1 ? "#topic="+arr[0] : "#topics="+arr.join(",");
+  var h = (arr.length===1 ? "#topic="+arr[0] : "#topics="+arr.join(","))
+        + (missFilter ? "&m="+missFilter : "");
   if(location.hash!==h) history.replaceState(null,"",h);
   build();
 }
@@ -588,7 +605,10 @@ function answer(said){
   var c = CARDS[queue[qi]];
   var truth = c[C_V]===1;
   var ok = (said===truth);
-  st.log[ck(c)] = {w: ok?0:1, t: Date.now()};
+  // n = 累計で何回まちがえたか。復習の範囲を「4回以上まちがえた肢」まで
+  // 絞れるようにするため、最後の正誤だけでなく回数を持つ。
+  var prev = st.log[ck(c)];
+  st.log[ck(c)] = {w: ok?0:1, t: Date.now(), n: missOf(prev) + (ok?0:1)};
   st.done++; if(ok) st.hit++;
   save(); answered=true;
 
@@ -683,6 +703,9 @@ function drawFilters(){
     function(i){ return st.f.range===i; }, function(i){ st.f.range=i; save(); drawFilters(); build(); });
   chips($("f-mode"), MODES.map(function(m){return m[0];}),
     function(i){ return st.f.mode===i; }, function(i){ st.f.mode=i; save(); drawFilters(); build(); });
+  chips($("f-miss"), MISSES.map(function(m){return m[0];}),
+    function(i){ return missFilter===MISSES[i][1]; },
+    function(i){ missFilter=MISSES[i][1]; drawFilters(); build(); });
 }
 $("reset").onclick=function(){
   if(!confirm("이 기기에 저장된 풀이 기록을 지웁니다. 계속할까요?")) return;
@@ -828,12 +851,14 @@ VIEWS.forEach(function(v, i){ $(v[0]).onclick=function(){ showView(i); }; });
 /* チェックリストからの #topic=<id> を受ける */
 function fromHash(){
   var h=location.hash||"";
-  var m=/^#topic=(\d+)$/.exec(h);
-  if(m && TOPICS[m[1]]){ setTopic(m[1]); showView(0); return true; }
-  m=/^#topics=([\d,]+)$/.exec(h);
+  var mm=/[?&]m=(\d+)/.exec(h);
+  var miss=mm?mm[1]:0;
+  var m=/^#topic=(\d+)/.exec(h);
+  if(m && TOPICS[m[1]]){ setTopic(m[1], miss); showView(0); return true; }
+  m=/^#topics=([\d,]+)/.exec(h);
   if(m){
     var ids=m[1].split(",").filter(function(x){ return x && TOPICS[x]; });
-    if(ids.length){ setTopic(ids); showView(0); return true; }
+    if(ids.length){ setTopic(ids, miss); showView(0); return true; }
   }
   return false;
 }

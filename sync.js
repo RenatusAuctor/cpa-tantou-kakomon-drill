@@ -25,13 +25,23 @@ var SYNC = (function () {
     return JSON.stringify(o);
   }
 
-  /* 肢の記録は t にミリ秒が入っているので、新しい方を残す */
+  /* まちがえた回数。n を持たない古い記録は最後の正誤から 1 か 0 とみなす */
+  function miss(rec) {
+    if (!rec) return 0;
+    return rec.n != null ? rec.n : (rec.w ? 1 : 0);
+  }
+
+  /* 肢の記録は t にミリ秒が入っているので、新しい方を残す。
+     ただし累計のまちがえ回数だけは、両方の大きい方を引き継ぐ
+     （端末ごとに別々に数えていて、新しい側が少ないことがある）。 */
   function mergeDrill(a, b) {
     a = a || {}; b = b || {};
     var log = a.log || {}, inc = b.log || {}, n = 0;
     for (var k in inc) {
       var x = log[k], y = inc[k];
+      var mx = Math.max(miss(x), miss(y));
       if (!x || (y.t || 0) > (x.t || 0)) { log[k] = y; n++; }
+      if (log[k]) log[k].n = mx;
     }
     a.log = log;
     if (b.day && b.day === a.day) {
