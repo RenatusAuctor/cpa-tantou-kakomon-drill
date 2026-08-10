@@ -8,6 +8,10 @@ try:
     bodies = json.load(open("topic_bodies.json", encoding="utf-8"))
 except FileNotFoundError:
     bodies = []
+try:
+    images = json.load(open("topic_images.json", encoding="utf-8"))
+except FileNotFoundError:
+    images = {}
 
 SUBJ = ["企業法", "監査論", "管理会計論", "財務会計論"]      # データ側のキー
 SUBJ_KO = ["기업법", "감사론", "관리회계론", "재무회계론"]     # 画面表示
@@ -69,7 +73,8 @@ for i, t in enumerate(tp):
                       ncards.get(i, 0),
                       [ei[s] for s in t["sessions"] if s in ei],
                       t.get("vol", ""), t.get("page", 0),
-                      bodies[i] if i < len(bodies) else ""]
+                      bodies[i] if i < len(bodies) else "",
+                      images.get(str(i), [])]
 
 payload = {"subjects": SUBJ_KO, "sessions": SESS, "cards": cards,
            "questions": questions, "topics": topics,

@@ -20,3 +20,5 @@ checklist_payload.json
 checklist_test.html
 make_test_page.py
 topic_bodies.json
+topic_images.json
+_croptest/

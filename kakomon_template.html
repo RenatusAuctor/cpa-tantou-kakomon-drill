@@ -188,6 +188,19 @@ details.body .bt{font-family:var(--mincho);font-size:.88rem;line-height:1.9;
   border-left:3px solid var(--rule);text-align:justify;overflow-wrap:anywhere;
   white-space:pre-wrap}
 .freqrow details.body{flex:1 0 100%}
+/* 紙面画像 */
+.bimg{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.bimg img{width:100%;height:auto;border:1px solid var(--rule);border-radius:6px;
+  background:#fff}
+details.body .btx>summary{cursor:pointer;font-size:.68rem;color:var(--ink3);
+  list-style:none;padding:6px 0 0}
+details.body .btx>summary::-webkit-details-marker{display:none}
+details.body .btx>summary::before{content:"▸ "}
+details.body .btx[open]>summary::before{content:"▾ "}
+details.body.noimg .bimg{display:none}
+@media (prefers-color-scheme:dark){ .bimg img{filter:invert(1) hue-rotate(180deg)} }
+:root[data-theme="dark"] .bimg img{filter:invert(1) hue-rotate(180deg)}
+:root[data-theme="light"] .bimg img{filter:none}
 .tchip{appearance:none;display:flex;align-items:flex-start;gap:8px;text-align:left;
   border:1px solid var(--rule);background:var(--paper);color:var(--ink2);
   font-family:inherit;font-size:.78rem;line-height:1.5;padding:9px 11px;border-radius:7px;
@@ -372,7 +385,8 @@ var topicFilter=null;              // 絞り込み中の論点ID配列（1件で
 function cardTopics(c){ return c[C_T] || []; }
 
 /* 教材のどこか：科目・巻・頁と、章／節 */
-var T_SUBJ=0,T_G=1,T_CH=2,T_SE=3,T_HD=4,T_FQ=5,T_NC=6,T_SS=7,T_VOL=8,T_PG=9,T_B=10;
+var T_SUBJ=0,T_G=1,T_CH=2,T_SE=3,T_HD=4,T_FQ=5,T_NC=6,T_SS=7,T_VOL=8,T_PG=9,
+    T_B=10,T_IMG=11;
 
 /* 論点ひとつぶん：絞り込みボタン＋教材本文。
    details をボタンの中に入れられないので、まとめる箱を1つ作る。 */
@@ -392,13 +406,26 @@ function topicBlock(id, after){
   return box;
 }
 
-/* 教材の本文。肢の正誤の根拠がそのまま書いてある。 */
+/* 教材の本文。肢の正誤の根拠がそのまま書いてある。
+   紙面の切り出し画像を優先し、読み込めない環境では抽出テキストに落ちる。 */
 function bodyEl(t){
-  if(!t || !t[T_B]) return null;
+  if(!t) return null;
+  var txt=t[T_B]||"", imgs=t[T_IMG]||[];
+  if(!txt && !imgs.length) return null;
   var d=document.createElement("details");
-  d.className="body";
-  d.innerHTML='<summary>교재 본문 보기</summary><div class="bt"></div>';
-  d.querySelector(".bt").textContent=t[T_B];
+  d.className="body"+(imgs.length?" hasimg":"");
+  d.innerHTML='<summary>교재 본문 보기</summary><div class="bimg"></div>'+
+    '<details class="btx"><summary>텍스트로 보기</summary><div class="bt"></div></details>';
+  d.querySelector(".bt").textContent=txt;
+  var host=d.querySelector(".bimg");
+  imgs.forEach(function(n){
+    var im=document.createElement("img");
+    im.loading="lazy"; im.decoding="async"; im.alt="";
+    im.onerror=function(){ d.classList.add("noimg");
+      d.querySelector(".btx").open=true; };
+    im.src="img/"+n;
+    host.appendChild(im);
+  });
   return d;
 }
 function where(t){

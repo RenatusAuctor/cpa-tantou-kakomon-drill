@@ -143,6 +143,20 @@ details.body .bt{font-family:var(--mincho);font-size:.88rem;line-height:1.9;
   margin-top:7px;padding:10px 12px;border-radius:7px;background:var(--paper);
   border-left:3px solid var(--rule);text-align:justify;overflow-wrap:anywhere;
   white-space:pre-wrap}
+/* 紙面画像 */
+.bimg{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.bimg img{width:100%;height:auto;border:1px solid var(--rule);border-radius:6px;
+  background:#fff}
+details.body .btx>summary{cursor:pointer;font-size:.68rem;color:var(--ink3);
+  list-style:none;padding:6px 0 0}
+details.body .btx>summary::-webkit-details-marker{display:none}
+details.body .btx>summary::before{content:"▸ "}
+details.body .btx[open]>summary::before{content:"▾ "}
+details.body.hasimg:not(.noimg) .btx>summary{opacity:.7}
+details.body.noimg .bimg{display:none}
+@media (prefers-color-scheme:dark){ .bimg img{filter:invert(1) hue-rotate(180deg)} }
+:root[data-theme="dark"] .bimg img{filter:invert(1) hue-rotate(180deg)}
+:root[data-theme="light"] .bimg img{filter:none}
 .drill{display:block;text-align:center;text-decoration:none;font-size:.76rem;font-weight:700;
   color:var(--ai);border:1px dashed var(--ai);border-radius:7px;padding:8px 0;
   letter-spacing:.03em}
@@ -312,16 +326,27 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 "use strict";
 var D = JSON.parse(document.getElementById("payload").textContent);
 var SUBJ=D.subjects, CH=D.chapters, SE=D.sections, R=D.rows;
-var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7,R_ID=8,R_N=9,R_B=10;
+var R_S=0,R_G=1,R_C=2,R_X=3,R_H=4,R_V=5,R_P=6,R_F=7,R_ID=8,R_N=9,R_B=10,R_IMG=11;
 
-/* 教材の本文。見出しだけ見て思い出す → ここを開いて答え合わせ、という順で使う。 */
+/* 教材の本文。見出しだけ見て思い出す → ここを開いて答え合わせ、という順で使う。
+   紙面の切り出し画像があればそれを見せ、読み込めない環境では抽出テキストに落ちる。 */
 function bodyEl(r){
-  var t=r[R_B];
-  if(!t) return null;
+  var txt=r[R_B]||"", imgs=r[R_IMG]||[];
+  if(!txt && !imgs.length) return null;
   var d=document.createElement("details");
-  d.className="body";
-  d.innerHTML='<summary>교재 본문 보기</summary><div class="bt"></div>';
-  d.querySelector(".bt").textContent=t;
+  d.className="body"+(imgs.length?" hasimg":"");
+  d.innerHTML='<summary>교재 본문 보기</summary><div class="bimg"></div>'+
+    '<details class="btx"><summary>텍스트로 보기</summary><div class="bt"></div></details>';
+  d.querySelector(".bt").textContent=txt;
+  var host=d.querySelector(".bimg");
+  imgs.forEach(function(n){
+    var im=document.createElement("img");
+    im.loading="lazy"; im.decoding="async"; im.alt="";
+    im.onerror=function(){ d.classList.add("noimg");
+      d.querySelector(".btx").open=true; };
+    im.src="img/"+n;
+    host.appendChild(im);
+  });
   return d;
 }
 var DRILL="https://renatusauctor.github.io/cpa-tantou-kakomon-drill/";
