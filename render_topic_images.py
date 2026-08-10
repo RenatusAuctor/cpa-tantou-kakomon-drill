@@ -13,7 +13,9 @@ import extract_topic_bodies as E
 
 OUT = "img"
 # 紙面は黒い文字と罫線しかないので、1bit にすると同じ解像度で 1/5 以下になる。
-DPI = 130
+# 130dpi では端末で等倍〜拡大になり、「社団性」が「社|団性」に割れて見えた。
+# 200dpi なら 340CSSpx×DPR3 に縮小されるので線が保たれる（260 との差は見えない）。
+DPI = 200
 THRESHOLD = 176
 PAD_TOP = 3          # 見出し行が切れないよう少し上から
 PAD_X = 6
